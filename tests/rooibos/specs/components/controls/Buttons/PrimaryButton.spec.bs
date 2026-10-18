@@ -263,6 +263,8 @@ namespace tests
         @it("uses the Liquid Glass button art for the default backgrounds")
         function _()
             originalTheme = m.global.theme
+            m.top.focusedBackground = "primary-focused.9.png"
+            m.top.unfocusedBackground = "primary-unfocused.9.png"
             m.global.theme = "liquid-glass"
             m.top.hasFocusVisual = false
 
