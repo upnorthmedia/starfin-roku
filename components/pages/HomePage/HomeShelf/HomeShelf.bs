@@ -61,6 +61,15 @@ function getFocusedItem() as dynamic
 end function
 
 '-------------------------------------------------------------------------------
+' getFocusedItemIndex
+'-------------------------------------------------------------------------------
+function getFocusedItemIndex() as integer
+    focused = m.items.rowItemFocused
+    if focused = invalid or focused.Count() < 2 then return -1
+    return focused[1]
+end function
+
+'-------------------------------------------------------------------------------
 ' getFocusedItemImageUrl
 '-------------------------------------------------------------------------------
 function getFocusedItemImageUrl() as string

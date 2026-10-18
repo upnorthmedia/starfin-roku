@@ -192,6 +192,23 @@ namespace tests
             m.global.theme = originalTheme
         end function
 
+
+        @it("reports the focused item index")
+        function _()
+            content = CreateObject("roSGNode", "ContentNode")
+            content.AddFields({ rowKey: "row" })
+            for each id in ["a", "b"]
+                child = content.createChild("ContentNode")
+                child.AddFields({ raw: { Id: id, Type: "Movie" } })
+            end for
+            m.top.layout = { width: 297, height: 465, itemSizeWidth: 1824, itemSpacing: -27, spacingAfter: 36, focusBitmapFilename: "home-page-poster-focus.png", itemComponentName: "VideoMediaCard" }
+            m.top.rowContent = content
+
+            m.top.findNode("items").jumpToRowItem = [0, 1]
+
+            m.assertEqual(m.top.callFunc("getFocusedItemIndex"), 1)
+        end function
+
     end class
 
 end namespace

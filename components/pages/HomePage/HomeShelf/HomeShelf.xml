@@ -13,6 +13,7 @@
     <field id="canFocusExitDown" type="boolean" value="true" onChange="onFocusExitAvailabilityChanged" />
     <function name="activate" />
     <function name="getFocusedItem" />
+    <function name="getFocusedItemIndex" />
     <function name="getFocusedItemImageUrl" />
     <function name="applyMediaStateChange" />
     <function name="applyPlaybackProgressChange" />

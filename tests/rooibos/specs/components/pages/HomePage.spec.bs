@@ -1563,6 +1563,35 @@ namespace tests
             m.assertEqual(m.top.findNode("billboard").featuredItems.Count(), 4)
         end function
 
+
+        @it("leaves the billboard to featured titles at the resting position and follows focus elsewhere")
+        function _()
+            originalTheme = m.global.theme
+            m.global.theme = "liquid-glass"
+            m.node.homeState.rowOrder = ["continueWatching"]
+            first = { Id: "cw-1", Type: "Movie", Name: "First" }
+            second = { Id: "cw-2", Type: "Movie", Name: "Second" }
+            'bs:disable-next-line 1140
+            addRow("continueWatching", "Continue Watching", [first, second])
+            'bs:disable-next-line 1140
+            renderRows(false)
+            shelf = m.node.homeState.shelfNodes[0]
+            billboard = m.top.findNode("billboard")
+
+            shelf.findNode("items").jumpToRowItem = [0, 0]
+            'bs:disable-next-line 1140
+            updateBillboard()
+
+            m.assertEqual(billboard.item, {})
+
+            shelf.findNode("items").jumpToRowItem = [0, 1]
+            'bs:disable-next-line 1140
+            updateBillboard()
+
+            m.assertEqual(billboard.item.Id, "cw-2")
+            m.global.theme = originalTheme
+        end function
+
     end class
 
 end namespace

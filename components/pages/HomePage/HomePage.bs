@@ -126,13 +126,18 @@ end sub
 '-------------------------------------------------------------------------------
 ' updateBillboard
 '-------------------------------------------------------------------------------
+' The resting position (first tile of the first shelf) leaves the billboard to
+' the featured titles, as on first load; moving away shows the focused title.
+'-------------------------------------------------------------------------------
 sub updateBillboard()
     if m.billboard.visible <> true then return
     if m.homeState.request <> invalid then m.billboard.server = Strings.ToString(m.homeState.request.server)
     item = invalid
     index = m.homeState.focusedShelfIndex
     if index >= 0 and index < m.homeState.shelfNodes.Count() then
-        item = m.homeState.shelfNodes[index].callFunc("getFocusedItem")
+        shelf = m.homeState.shelfNodes[index]
+        atRestPosition = index = 0 and shelf.callFunc("getFocusedItemIndex") <= 0
+        if atRestPosition = false then item = shelf.callFunc("getFocusedItem")
     end if
     if Arrays.IsAssocArray(item) then
         m.billboard.item = item
