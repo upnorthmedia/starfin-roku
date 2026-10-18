@@ -137,9 +137,11 @@ async function renderBackground(skin) {
 }
 
 // Media shell overlay: fades artwork into the theme canvas from the left and the bottom.
+// Gradients are rendered small and stretched by the Poster so they cost a fraction of a
+// full-screen texture.
 async function renderMediaShellGradient(skin) {
   const left = skin.mediaShellGradient.left > 0 ? `<rect width="1920" height="1080" fill="url(#l)"/>` : '';
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 1920 1080">
     <defs>
       <linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0.45" stop-color="${skin.base}" stop-opacity="0"/><stop offset="0.72" stop-color="${skin.base}" stop-opacity="0.78"/><stop offset="1" stop-color="${skin.base}" stop-opacity="${skin.mediaShellGradient.bottom}"/></linearGradient>
       <linearGradient id="l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${skin.base}" stop-opacity="${skin.mediaShellGradient.left}"/><stop offset="0.42" stop-color="${skin.base}" stop-opacity="0.55"/><stop offset="0.72" stop-color="${skin.base}" stop-opacity="0"/></linearGradient>
@@ -152,13 +154,14 @@ async function renderMediaShellGradient(skin) {
 
 // Home billboard overlay: artwork fades into the canvas on the left and at the bottom
 // so the logo and synopsis stay legible and the shelves below start on solid canvas.
-async function renderBillboardFade(skin) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="760">
+async function renderBillboardFade(skin, withSideFade) {
+  const side = withSideFade ? `<rect width="1920" height="760" fill="url(#l)"/>` : '';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="190" viewBox="0 0 1920 760">
     <defs>
       <linearGradient id="l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${skin.base}" stop-opacity="0.96"/><stop offset="0.38" stop-color="${skin.base}" stop-opacity="0.72"/><stop offset="0.68" stop-color="${skin.base}" stop-opacity="0"/></linearGradient>
       <linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0.5" stop-color="${skin.base}" stop-opacity="0"/><stop offset="0.82" stop-color="${skin.base}" stop-opacity="0.85"/><stop offset="1" stop-color="${skin.base}" stop-opacity="1"/></linearGradient>
     </defs>
-    <rect width="1920" height="760" fill="url(#l)"/>
+    ${side}
     <rect width="1920" height="760" fill="url(#b)"/>
   </svg>`;
   return sharp(Buffer.from(svg)).png({ compressionLevel: 9, adaptiveFiltering: true }).toBuffer();
@@ -218,7 +221,8 @@ for (const [name, skin] of Object.entries(skins)) {
   await mkdir(root, { recursive: true });
   await writeFile(`${root}/background.png`, await renderBackground(skin));
   await writeFile(`${root}/media-shell-gradient.png`, await renderMediaShellGradient(skin));
-  await writeFile(`${root}/billboard-fade.png`, await renderBillboardFade(skin));
+  await writeFile(`${root}/billboard-fade.png`, await renderBillboardFade(skin, true));
+  await writeFile(`${root}/billboard-fade-bottom.png`, await renderBillboardFade(skin, false));
   await writeFile(`${root}/square-button-background.png`, await renderRoundedTile(64, 64, skin.square));
   await writeFile(`${root}/detailed-card-panel.png`, await renderRoundedTile(882, 496, skin.detailedCard));
   for (const [profile, scale] of profiles) {

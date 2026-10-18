@@ -81,9 +81,13 @@ sub applyTheme()
     if palette.fullScreenGradient then
         m.background.gradient.translation = [0, 0]
         m.background.gradient.height = 1080
+        m.background.gradient.loadWidth = 480
+        m.background.gradient.loadHeight = 270
     else
         m.background.gradient.translation = [0, 490]
         m.background.gradient.height = 740
+        m.background.gradient.loadWidth = 0
+        m.background.gradient.loadHeight = 0
     end if
     m.background.full.opacity = palette.backdropOpacity
     m.background.corner.opacity = palette.backdropOpacity

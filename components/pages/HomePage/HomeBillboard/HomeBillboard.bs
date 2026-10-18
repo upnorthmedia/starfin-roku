@@ -16,7 +16,6 @@ sub init()
     initReferences()
     initHandlers()
     applyTheme()
-    render()
 end sub
 
 '-------------------------------------------------------------------------------
@@ -50,9 +49,8 @@ end sub
 ' applyTheme
 '-------------------------------------------------------------------------------
 sub applyTheme()
-    mode = Theme.Normalize(m.global.theme)
-    m.billboard.fade.uri = "pkg:/images/themes/" + mode + "/billboard-fade.png"
     ThemeFont.Apply(m.top, m.global.theme)
+    render()
 end sub
 
 '-------------------------------------------------------------------------------
@@ -65,11 +63,38 @@ sub render()
         return
     end if
 
+    library = isLibrary(item)
+    ' Library artwork bakes the library name in, so it shows subdued with no text or side fade.
+    m.billboard.backdrop.opacity = library ? 0.45 : 1.0
+    m.billboard.fade.uri = getFadeUri(library)
     setBackdrop(getBackdropUrl(item))
+    if library then
+        setLogo("", "")
+        m.billboard.meta.text = ""
+        m.billboard.overview.text = ""
+        return
+    end if
     setLogo(getLogoUrl(item), getTitle(item))
     m.billboard.meta.text = getMetadataText(item)
     m.billboard.overview.text = Strings.ToString(item.Overview)
 end sub
+
+'-------------------------------------------------------------------------------
+' getFadeUri
+'-------------------------------------------------------------------------------
+function getFadeUri(bottomOnly as boolean) as string
+    mode = Theme.Normalize(m.global.theme)
+    if bottomOnly then return "pkg:/images/themes/" + mode + "/billboard-fade-bottom.png"
+    return "pkg:/images/themes/" + mode + "/billboard-fade.png"
+end function
+
+'-------------------------------------------------------------------------------
+' isLibrary
+'-------------------------------------------------------------------------------
+function isLibrary(item as object) as boolean
+    itemType = LCase(Strings.ToString(item.Type))
+    return itemType = "collectionfolder" or itemType = "userview" or itemType = "folder" or Strings.ToString(item.CollectionType) <> ""
+end function
 
 '-------------------------------------------------------------------------------
 ' clearBillboard
