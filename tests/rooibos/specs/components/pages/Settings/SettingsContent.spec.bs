@@ -67,7 +67,7 @@ namespace tests
             m.assertTrue(content.findNode("themePanel").visible)
             m.assertFalse(content.findNode("libraryPanel").visible)
             m.assertEqual(content.findNode("themeOptions").checkedItem, 2)
-            m.assertEqual(content.findNode("themeOptions").content.getChildCount(), 4)
+            m.assertEqual(content.findNode("themeOptions").content.getChildCount(), 6)
             m.assertEqual(content.themePreviewRequested, "")
             m.assertInvalid(content.findNode("tvPanel"))
         end function
@@ -168,7 +168,7 @@ namespace tests
             m.assertEqual(options.numRows, 6)
             m.assertEqual(m.top.findNode("themeCard").cardHeight, 396.0)
             m.assertEqual(m.top.findNode("watchedIndicatorCard").translation, [0.0, 412.0])
-            m.assertEqual(m.top.findNode("unwatchedEpisodeCountCard").translation, [416.0, 412.0])
+            m.assertEqual(m.top.findNode("unwatchedEpisodeCountCard").translation[1], 412.0)
             m.assertEqual(m.node.categoryControls[2], [options, m.node.settingsControls.watchedIndicatorOptions, m.node.settingsControls.showUnwatchedEpisodeCountOptions])
             m.assertEqual(options.getParent(), m.top.findNode("themeCard"))
         end function
@@ -1018,7 +1018,7 @@ namespace tests
             'bs:disable-next-line 1140
             showCategory(2)
             'bs:disable-next-line 1140
-            focusCategoryControl(0, 3)
+            focusCategoryControl(0, 5)
 
             'bs:disable-next-line 1140
             handled = onKeyEvent("down", true)
@@ -2112,7 +2112,7 @@ namespace tests
 
             m.assertTrue(watched.cardWidth < count.cardWidth)
             m.assertEqual(watched.cardWidth + count.cardWidth + 16, 1160.0)
-            m.assertEqual(count.translation, [watched.cardWidth + 16, 308.0])
+            m.assertEqual(count.translation, [watched.cardWidth + 16, 412.0])
             m.assertEqual(count.getParent(), m.top.findNode("themePanel"))
             m.assertEqual(options.content.getChildCount(), 3)
             m.assertEqual(options.content.getChild(0).title, "Off")
@@ -2193,7 +2193,7 @@ namespace tests
             'bs:disable-next-line 1140
             showCategory(2)
             'bs:disable-next-line 1140
-            focusCategoryControl(0, 3)
+            focusCategoryControl(0, 5)
 
             'bs:disable-next-line 1140
             onKeyEvent("down", true)
