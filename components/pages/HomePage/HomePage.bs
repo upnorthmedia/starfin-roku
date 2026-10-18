@@ -35,6 +35,7 @@ sub init()
         sessionKey: ""
         rows: {}
         episodeImageMode: SettingsStore.GetSettingValue(m.top.settings, SettingsStore.Key.HomeEpisodeImages)
+        showMyMediaRow: SettingsStore.IsMyMediaRowShown(m.top.settings)
         rowOrder: ["libraries", "continueWatching", "continueListening", "nextUp", "liveTvOnNow"]
         latestLibraries: {}
         latestTasks: []
@@ -144,6 +145,11 @@ end sub
 ' onSettingsChanged
 '-------------------------------------------------------------------------------
 sub onSettingsChanged()
+    showMyMediaRow = SettingsStore.IsMyMediaRowShown(m.top.settings)
+    if showMyMediaRow <> m.homeState.showMyMediaRow then
+        m.homeState.showMyMediaRow = showMyMediaRow
+        if hasRenderedRows() or m.homeState.rows.DoesExist("libraries") then renderRows(m.top.isInFocusChain())
+    end if
     mode = SettingsStore.GetSettingValue(m.top.settings, SettingsStore.Key.HomeEpisodeImages)
     if mode = m.homeState.episodeImageMode then return
     m.homeState.episodeImageMode = mode
@@ -839,7 +845,7 @@ sub renderRows(focusAfterRender = true as boolean)
     shelfIndex = 0
 
     for each key in m.homeState.rowOrder
-        if m.homeState.rows.DoesExist(key) then
+        if m.homeState.rows.DoesExist(key) and isRowShown(key) then
             layout = getRowLayout(key)
             shelf = CreateObject("roSGNode", "HomeShelf")
             shelf.rowIndex = shelfIndex
@@ -868,6 +874,7 @@ sub renderRows(focusAfterRender = true as boolean)
     m.homeState.shelfNodes = shelfNodes
     refreshEpisodeCounts()
     m.homeState.shelfPositions = shelfPositions
+    m.billboard.featuredItems = buildFeaturedItems()
     if m.homeState.focusedShelfIndex >= shelfNodes.Count() then
         m.homeState.focusedShelfIndex = shelfNodes.Count() - 1
     end if
@@ -880,6 +887,48 @@ sub renderRows(focusAfterRender = true as boolean)
         if shouldFocus = true and m.homeState.refresh.blocking <> true then focusShelf(m.homeState.focusedShelfIndex)
     end if
 end sub
+
+'-------------------------------------------------------------------------------
+' isRowShown
+'-------------------------------------------------------------------------------
+function isRowShown(key as string) as boolean
+    if key = "libraries" then return m.homeState.showMyMediaRow = true
+    return true
+end function
+
+'-------------------------------------------------------------------------------
+' buildFeaturedItems
+'-------------------------------------------------------------------------------
+' Recently added movies and series, interleaved, for the skin billboard to
+' rotate through while no title below is focused.
+'-------------------------------------------------------------------------------
+function buildFeaturedItems() as object
+    movies = []
+    series = []
+    for each libraryId in m.homeState.latestLibraries
+        library = m.homeState.latestLibraries[libraryId]
+        rowKey = "latest:" + Strings.ToString(library.id)
+        if m.homeState.rows.DoesExist(rowKey) then
+            row = m.homeState.rows[rowKey]
+            for i = 0 to row.getChildCount() - 1
+                item = row.getChild(i).raw
+                if isPlayableMovie(item) then
+                    movies.Push(item)
+                else if isTVSeries(item) or isTVEpisode(item) then
+                    series.Push(item)
+                end if
+            end for
+        end if
+    end for
+    featured = []
+    index = 0
+    while featured.Count() < 6 and (index < movies.Count() or index < series.Count())
+        if index < movies.Count() then featured.Push(movies[index])
+        if index < series.Count() and featured.Count() < 6 then featured.Push(series[index])
+        index = index + 1
+    end while
+    return featured
+end function
 
 '-------------------------------------------------------------------------------
 ' markCoreTaskComplete

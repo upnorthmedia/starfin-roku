@@ -1,0 +1,104 @@
+namespace tests
+
+    @SGNode("HomeBillboard")
+    @suite("HomeBillboard component")
+    class HomeBillboardTests extends rooibos.BaseTestSuite
+
+        protected override function beforeEach()
+            m.top.server = "http://server"
+            m.top.featuredItems = []
+            m.top.item = {}
+        end function
+
+        @describe("focused items")
+
+        @it("shows a focused movie with its backdrop, title and metadata")
+        function _()
+            m.top.item = { Id: "movie-1", Type: "Movie", Name: "Example Movie", ProductionYear: 2024, OfficialRating: "PG", Genres: ["Drama"], Overview: "A story.", BackdropImageTags: ["bd"], ImageTags: {} }
+
+            m.assertTrue(Instr(1, m.node.billboard.backdrop.uri, "/movie-1/Images/Backdrop") > 0)
+            m.assertTrue(m.node.billboard.backdrop.visible)
+            m.assertEqual(m.node.billboard.title.text, "Example Movie")
+            m.assertTrue(m.node.billboard.title.visible)
+            m.assertEqual(m.node.billboard.meta.text, "2024 • PG • Drama")
+            m.assertEqual(m.node.billboard.overview.text, "A story.")
+            m.assertFalse(m.node.featured.active)
+        end function
+
+        @it("uses the series backdrop and logo for a focused episode")
+        function _()
+            m.top.item = { Id: "ep-1", Type: "Episode", Name: "Pilot", SeriesName: "Example Series", ParentIndexNumber: 1, IndexNumber: 2, ImageTags: { Primary: "still" }, ParentBackdropItemId: "series-1", ParentBackdropImageTags: ["sbd"], ParentLogoItemId: "series-1", ParentLogoImageTag: "logo" }
+
+            m.assertTrue(Instr(1, m.node.billboard.backdrop.uri, "/series-1/Images/Backdrop") > 0)
+            m.assertTrue(Instr(1, m.node.billboard.logo.uri, "/series-1/Images/Logo") > 0)
+            m.assertEqual(m.node.billboard.title.text, "Example Series")
+            m.assertEqual(m.node.billboard.meta.text, "S1:E2 • Pilot")
+        end function
+
+        @describe("featured rotation")
+
+        @it("rotates featured titles while a library tile is focused")
+        function _()
+            m.top.featuredItems = [{ Id: "f-1", Type: "Movie", Name: "First", BackdropImageTags: ["a"] }, { Id: "f-2", Type: "Series", Name: "Second", BackdropImageTags: ["b"] }]
+
+            m.top.item = { Id: "lib", Type: "CollectionFolder", CollectionType: "movies", Name: "Movies", ImageTags: { Primary: "art" } }
+
+            m.assertEqual(m.node.billboard.title.text, "First")
+            m.assertTrue(Instr(1, m.node.billboard.backdrop.uri, "/f-1/Images/Backdrop") > 0)
+            m.assertTrue(m.node.featured.active)
+            m.assertEqual(m.node.featured.timer.control, "start")
+        end function
+
+        @it("advances to the next featured title when the timer fires and wraps around")
+        function _()
+            m.top.featuredItems = [{ Id: "f-1", Type: "Movie", Name: "First", BackdropImageTags: ["a"] }, { Id: "f-2", Type: "Series", Name: "Second", BackdropImageTags: ["b"] }]
+            m.top.item = {}
+
+            m.node.featured.timer.fire = true
+
+            m.assertEqual(m.node.billboard.title.text, "Second")
+
+            m.node.featured.timer.fire = true
+
+            m.assertEqual(m.node.billboard.title.text, "First")
+        end function
+
+        @it("stops rotating when a media item is focused")
+        function _()
+            m.top.featuredItems = [{ Id: "f-1", Type: "Movie", Name: "First", BackdropImageTags: ["a"] }, { Id: "f-2", Type: "Series", Name: "Second", BackdropImageTags: ["b"] }]
+            m.top.item = {}
+
+            m.top.item = { Id: "movie-2", Type: "Movie", Name: "Focused", BackdropImageTags: ["c"] }
+
+            m.assertEqual(m.node.billboard.title.text, "Focused")
+            m.assertFalse(m.node.featured.active)
+            m.assertEqual(m.node.featured.timer.control, "stop")
+        end function
+
+        @it("never shows library artwork and clears when nothing is featured")
+        function _()
+            m.top.featuredItems = []
+
+            m.top.item = { Id: "lib", Type: "CollectionFolder", CollectionType: "tvshows", Name: "Shows", ImageTags: { Primary: "art" } }
+
+            m.assertEqual(m.node.billboard.backdrop.uri, "")
+            m.assertFalse(m.node.billboard.backdrop.visible)
+            m.assertEqual(m.node.billboard.title.text, "")
+            m.assertFalse(m.node.featured.active)
+        end function
+
+        @it("restarts from the first title when the featured list changes")
+        function _()
+            m.top.featuredItems = [{ Id: "f-1", Type: "Movie", Name: "First", BackdropImageTags: ["a"] }, { Id: "f-2", Type: "Series", Name: "Second", BackdropImageTags: ["b"] }]
+            m.top.item = {}
+            m.node.featured.timer.fire = true
+
+            m.top.featuredItems = [{ Id: "f-3", Type: "Movie", Name: "Third", BackdropImageTags: ["c"] }]
+
+            m.assertEqual(m.node.billboard.title.text, "Third")
+            m.assertFalse(m.node.featured.active)
+        end function
+
+    end class
+
+end namespace

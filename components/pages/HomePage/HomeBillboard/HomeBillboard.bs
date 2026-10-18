@@ -6,6 +6,7 @@ import "pkg:/source/ItemImage.bs"
 import "pkg:/source/JellyfinImage.bs"
 import "pkg:/source/Url.bs"
 import "pkg:/source/MediaMetadataFormatting.bs"
+import "pkg:/source/TimerControl.bs"
 import "pkg:/source/Theme.bs"
 import "pkg:/source/ThemeFont.bs"
 
@@ -32,15 +33,23 @@ sub initReferences()
         backdropUrl: ""
         logoUrl: ""
     }
+    ' Featured titles rotate while no media item below is focused.
+    m.featured = {
+        timer: m.top.findNode("rotateTimer")
+        index: 0
+        active: false
+    }
 end sub
 
 '-------------------------------------------------------------------------------
 ' initHandlers
 '-------------------------------------------------------------------------------
 sub initHandlers()
-    ' Register after references exist; init renders the current item.
+    ' Register after references exist; init renders the current fields.
     m.top.observeField("item", "render")
     m.top.observeField("server", "render")
+    m.top.observeField("featuredItems", "onFeaturedItemsChanged")
+    m.featured.timer.observeField("fire", "onRotateTimerFired")
     m.global.observeField("theme", "applyTheme")
     m.billboard.logo.observeField("loadStatus", "onLogoLoadStatusChanged")
 end sub
@@ -49,43 +58,84 @@ end sub
 ' applyTheme
 '-------------------------------------------------------------------------------
 sub applyTheme()
+    m.billboard.fade.uri = "pkg:/images/themes/" + Theme.Normalize(m.global.theme) + "/billboard-fade.png"
     ThemeFont.Apply(m.top, m.global.theme)
+    render()
+end sub
+
+'-------------------------------------------------------------------------------
+' onFeaturedItemsChanged
+'-------------------------------------------------------------------------------
+sub onFeaturedItemsChanged()
+    m.featured.index = 0
     render()
 end sub
 
 '-------------------------------------------------------------------------------
 ' render
 '-------------------------------------------------------------------------------
+' A focused media item takes the billboard; otherwise featured titles rotate.
+' Library tiles bake their name into their artwork, so they never show here.
+'-------------------------------------------------------------------------------
 sub render()
     item = m.top.item
-    if Arrays.IsAssocArray(item) = false then
+    if isMediaItem(item) then
+        setRotation(false)
+        showItem(item)
+        return
+    end if
+
+    featured = getFeaturedItems()
+    if featured.Count() = 0 then
+        setRotation(false)
         clearBillboard()
         return
     end if
 
-    library = isLibrary(item)
-    ' Library artwork bakes the library name in, so it shows subdued with no text or side fade.
-    m.billboard.backdrop.opacity = library ? 0.45 : 1.0
-    m.billboard.fade.uri = getFadeUri(library)
-    setBackdrop(getBackdropUrl(item))
-    if library then
-        setLogo("", "")
-        m.billboard.meta.text = ""
-        m.billboard.overview.text = ""
-        return
-    end if
-    setLogo(getLogoUrl(item), getTitle(item))
-    m.billboard.meta.text = getMetadataText(item)
-    m.billboard.overview.text = Strings.ToString(item.Overview)
+    if m.featured.index >= featured.Count() then m.featured.index = 0
+    showItem(featured[m.featured.index])
+    setRotation(featured.Count() > 1)
 end sub
 
 '-------------------------------------------------------------------------------
-' getFadeUri
+' onRotateTimerFired
 '-------------------------------------------------------------------------------
-function getFadeUri(bottomOnly as boolean) as string
-    mode = Theme.Normalize(m.global.theme)
-    if bottomOnly then return "pkg:/images/themes/" + mode + "/billboard-fade-bottom.png"
-    return "pkg:/images/themes/" + mode + "/billboard-fade.png"
+sub onRotateTimerFired()
+    featured = getFeaturedItems()
+    if featured.Count() = 0 or m.featured.active <> true then return
+    m.featured.index = (m.featured.index + 1) mod featured.Count()
+    showItem(featured[m.featured.index])
+end sub
+
+'-------------------------------------------------------------------------------
+' setRotation
+'-------------------------------------------------------------------------------
+sub setRotation(active as boolean)
+    if active = m.featured.active then return
+    m.featured.active = active
+    if active then
+        m.featured.timer.control = TimerControl.Command.Start
+    else
+        m.featured.timer.control = TimerControl.Command.Stop
+    end if
+end sub
+
+'-------------------------------------------------------------------------------
+' getFeaturedItems
+'-------------------------------------------------------------------------------
+function getFeaturedItems() as object
+    items = m.top.featuredItems
+    if Type(items) <> "roArray" then return []
+    return items
+end function
+
+'-------------------------------------------------------------------------------
+' isMediaItem
+'-------------------------------------------------------------------------------
+function isMediaItem(item as dynamic) as boolean
+    if Arrays.IsAssocArray(item) = false then return false
+    if Strings.ToString(item.Id) = "" then return false
+    return isLibrary(item) = false
 end function
 
 '-------------------------------------------------------------------------------
@@ -95,6 +145,16 @@ function isLibrary(item as object) as boolean
     itemType = LCase(Strings.ToString(item.Type))
     return itemType = "collectionfolder" or itemType = "userview" or itemType = "folder" or Strings.ToString(item.CollectionType) <> ""
 end function
+
+'-------------------------------------------------------------------------------
+' showItem
+'-------------------------------------------------------------------------------
+sub showItem(item as object)
+    setBackdrop(getBackdropUrl(item))
+    setLogo(getLogoUrl(item), getTitle(item))
+    m.billboard.meta.text = getMetadataText(item)
+    m.billboard.overview.text = Strings.ToString(item.Overview)
+end sub
 
 '-------------------------------------------------------------------------------
 ' clearBillboard
@@ -145,21 +205,21 @@ end sub
 '-------------------------------------------------------------------------------
 ' getBackdropUrl
 '-------------------------------------------------------------------------------
-' Episodes borrow their series backdrop; libraries show their primary art.
+' Episodes borrow their series backdrop; thumbs and primary art are fallbacks.
 '-------------------------------------------------------------------------------
 function getBackdropUrl(item as object) as string
     server = Strings.ToString(m.top.server)
     if server = "" then return ""
-    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Backdrop, 1280, 720)
+    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Backdrop, 960, 540)
     if imageUrl <> "" then return imageUrl
     parentId = Strings.ToString(item.ParentBackdropItemId)
     parentTags = item.ParentBackdropImageTags
     if parentId <> "" and Type(parentTags) = "roArray" and parentTags.Count() > 0 then
-        return Url.BuildImageUrl(server, parentId, JellyfinImage.Type.Backdrop, Strings.ToString(parentTags[0]), 1280, 720, invalid)
+        return Url.BuildImageUrl(server, parentId, JellyfinImage.Type.Backdrop, Strings.ToString(parentTags[0]), 960, 540, invalid)
     end if
-    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Thumb, 1280, 720)
+    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Thumb, 960, 540)
     if imageUrl <> "" then return imageUrl
-    return ItemImage.GetUrl(server, item, JellyfinImage.Type.Primary, 1280, 720)
+    return ItemImage.GetUrl(server, item, JellyfinImage.Type.Primary, 960, 540)
 end function
 
 '-------------------------------------------------------------------------------

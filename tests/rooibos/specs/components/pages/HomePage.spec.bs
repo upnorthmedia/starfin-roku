@@ -1485,6 +1485,84 @@ namespace tests
             m.global.theme = originalTheme
         end function
 
+
+        @describe("My Media row preference")
+
+        @it("renders the My Media shelf by default")
+        function _()
+            m.node.homeState.rowOrder = ["libraries", "continueWatching"]
+            'bs:disable-next-line 1140
+            addRow("libraries", "My Media", [{ Id: "library", Type: "CollectionFolder", CollectionType: "movies" }])
+            'bs:disable-next-line 1140
+            addRow("continueWatching", "Continue Watching", [{ Id: "home-1", Type: "Video" }])
+            'bs:disable-next-line 1140
+            renderRows(false)
+
+            m.assertEqual(m.node.homeState.shelfNodes.Count(), 2)
+            m.assertEqual(m.node.homeState.shelfNodes[0].rowContent.rowKey, "libraries")
+        end function
+
+        @it("hides the My Media shelf when the preference is off and restores it when on")
+        function _()
+            m.node.homeState.rowOrder = ["libraries", "continueWatching"]
+            'bs:disable-next-line 1140
+            addRow("libraries", "My Media", [{ Id: "library", Type: "CollectionFolder", CollectionType: "movies" }])
+            'bs:disable-next-line 1140
+            addRow("continueWatching", "Continue Watching", [{ Id: "home-1", Type: "Video" }])
+            'bs:disable-next-line 1140
+            renderRows(false)
+
+            m.top.settings = { "home-episode-images": "episode-with-logo", "show-my-media-row": "off" }
+
+            m.assertFalse(m.node.homeState.showMyMediaRow)
+            m.assertEqual(m.node.homeState.shelfNodes.Count(), 1)
+            m.assertEqual(m.node.homeState.shelfNodes[0].rowContent.rowKey, "continueWatching")
+
+            m.top.settings = { "home-episode-images": "episode-with-logo", "show-my-media-row": "on" }
+
+            m.assertTrue(m.node.homeState.showMyMediaRow)
+            m.assertEqual(m.node.homeState.shelfNodes.Count(), 2)
+            m.assertEqual(m.node.homeState.shelfNodes[0].rowContent.rowKey, "libraries")
+        end function
+
+        @describe("featured billboard items")
+
+        @it("interleaves recently added movies and series for the billboard")
+        function _()
+            m.node.homeState.rowOrder = ["latest:movies", "latest:shows"]
+            m.node.homeState.latestLibraries = { movies: { id: "movies", name: "Movies", collectionType: "movies" }, shows: { id: "shows", name: "Shows", collectionType: "tvshows" } }
+            'bs:disable-next-line 1140
+            addRow("latest:movies", "Recently Added in Movies", [{ Id: "m-1", Type: "Movie", Name: "Movie One" }, { Id: "m-2", Type: "Movie", Name: "Movie Two" }])
+            'bs:disable-next-line 1140
+            addRow("latest:shows", "Recently Added in Shows", [{ Id: "s-1", Type: "Series", Name: "Series One" }])
+
+            'bs:disable-next-line 1140
+            renderRows(false)
+
+            featured = m.top.findNode("billboard").featuredItems
+            m.assertEqual(featured.Count(), 3)
+            m.assertEqual(featured[0].Id, "m-1")
+            m.assertEqual(featured[1].Id, "s-1")
+            m.assertEqual(featured[2].Id, "m-2")
+        end function
+
+        @it("caps the featured billboard at six titles")
+        function _()
+            m.node.homeState.rowOrder = ["latest:movies"]
+            m.node.homeState.latestLibraries = { movies: { id: "movies", name: "Movies", collectionType: "movies" } }
+            items = []
+            for i = 1 to 8
+                items.Push({ Id: "m-" + i.ToStr(), Type: "Movie", Name: "Movie " + i.ToStr() })
+            end for
+            'bs:disable-next-line 1140
+            addRow("latest:movies", "Recently Added in Movies", items)
+
+            'bs:disable-next-line 1140
+            renderRows(false)
+
+            m.assertEqual(m.top.findNode("billboard").featuredItems.Count(), 6)
+        end function
+
     end class
 
 end namespace

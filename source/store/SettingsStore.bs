@@ -29,6 +29,7 @@ namespace SettingsStore
         TvEpisodeListDisplay = "tv-ep-list-scroll"
         ShowSeasonSummaryCard = "show-season-summary-card"
         HomeEpisodeImages = "home-episode-images"
+        ShowMyMediaRow = "show-my-media-row"
         MovieShellLayout = "movie-shell-layout"
         TvSeriesShellLayout = "tv-series-shell-layout"
         TvEpisodeShellLayout = "tv-episode-shell-layout"
@@ -65,6 +66,7 @@ namespace SettingsStore
         defaultSettings[Key.TvEpisodeListDisplay] = "vertical"
         defaultSettings[Key.ShowSeasonSummaryCard] = "on"
         defaultSettings[Key.HomeEpisodeImages] = HomeEpisodeImages.Mode.Series
+        defaultSettings[Key.ShowMyMediaRow] = "on"
         defaultSettings[Key.MovieShellLayout] = MediaShellLayout.Mode.FullScreen
         defaultSettings[Key.TvSeriesShellLayout] = MediaShellLayout.Mode.PartialScreen
         defaultSettings[Key.TvEpisodeShellLayout] = MediaShellLayout.Mode.FullScreen
@@ -90,7 +92,7 @@ namespace SettingsStore
     ' SettingsStore.AccountKeys
     '---------------------------------------------------------------------------
     function AccountKeys() as object
-        return [Key.TvLibraryLayout, Key.MovieLibraryLayout, Key.CollectionCardsLayout, Key.CollectionItemsLayout, Key.PlaylistCardsLayout, Key.PlaylistItemsLayout, Key.MusicVideosLayout, Key.HomeVideosLayout, Key.TvEpisodeListDisplay, Key.ShowSeasonSummaryCard, Key.HomeEpisodeImages, Key.MovieShellLayout, Key.TvSeriesShellLayout, Key.TvEpisodeShellLayout, Key.MusicShellLayout, Key.Theme, Key.WatchedIndicatorStyle, Key.ShowUnwatchedEpisodeCount, Key.ThemeMusic, Key.AutoSkipIntros, Key.AutoSkipCredits, Key.NextItemPlayback, Key.NextEpisodePromptSeconds, Key.ScreensaverType, Key.ScreensaverDelay, Key.SubtitleBurnInMode]
+        return [Key.TvLibraryLayout, Key.MovieLibraryLayout, Key.CollectionCardsLayout, Key.CollectionItemsLayout, Key.PlaylistCardsLayout, Key.PlaylistItemsLayout, Key.MusicVideosLayout, Key.HomeVideosLayout, Key.TvEpisodeListDisplay, Key.ShowSeasonSummaryCard, Key.HomeEpisodeImages, Key.ShowMyMediaRow, Key.MovieShellLayout, Key.TvSeriesShellLayout, Key.TvEpisodeShellLayout, Key.MusicShellLayout, Key.Theme, Key.WatchedIndicatorStyle, Key.ShowUnwatchedEpisodeCount, Key.ThemeMusic, Key.AutoSkipIntros, Key.AutoSkipCredits, Key.NextItemPlayback, Key.NextEpisodePromptSeconds, Key.ScreensaverType, Key.ScreensaverDelay, Key.SubtitleBurnInMode]
     end function
 
     '---------------------------------------------------------------------------
@@ -235,6 +237,13 @@ namespace SettingsStore
         if key = Key.Theme then return Theme.Normalize(settings[key])
         if key = Key.HomeEpisodeImages then return HomeEpisodeImages.Normalize(settings[key])
         return settings[key].ToStr()
+    end function
+
+    '---------------------------------------------------------------------------
+    ' SettingsStore.IsMyMediaRowShown
+    '---------------------------------------------------------------------------
+    function IsMyMediaRowShown(settings as dynamic) as boolean
+        return LCase(SettingsStore.GetSettingValue(settings, Key.ShowMyMediaRow)) <> "off"
     end function
 
     '---------------------------------------------------------------------------

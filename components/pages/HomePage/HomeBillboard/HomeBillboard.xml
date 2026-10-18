@@ -4,6 +4,7 @@
   <interface>
     <field id="server" type="string" />
     <field id="item" type="assocarray" />
+    <field id="featuredItems" type="array" />
   </interface>
   <children>
     <Poster id="backdrop" width="1920" height="760" loadWidth="960" loadHeight="540" loadDisplayMode="scaleToZoom" />
@@ -12,5 +13,6 @@
     <Label id="titleLabel" translation="[96,150]" width="900" height="170" wrap="true" maxLines="2" vertAlign="bottom" color="0xFFFFFFFF" font="font:ExtraLargeBoldSystemFont" visible="false" />
     <Label id="metaLabel" translation="[96,352]" width="900" height="36" color="0xD8E2ECFF" font="font:SmallBoldSystemFont" />
     <Label id="overviewLabel" translation="[96,398]" width="820" height="124" wrap="true" maxLines="3" color="0xF3F7FBFF" font="font:SmallSystemFont" />
+    <Timer id="rotateTimer" duration="9" repeat="true" />
   </children>
 </component>

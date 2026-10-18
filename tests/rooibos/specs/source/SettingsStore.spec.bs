@@ -1259,6 +1259,44 @@ namespace tests
             m.assertEqual(SettingsStore.GetSettingValue({}, SettingsStore.Key.AutoSkipCredits), "off")
         end function
 
+
+        @describe("My Media row preference")
+
+        @it("defaults the My Media row to shown")
+        function _()
+            m.assertEqual(SettingsStore.Key.ShowMyMediaRow, "show-my-media-row")
+            m.assertEqual(SettingsStore.GetSettingValue({}, SettingsStore.Key.ShowMyMediaRow), "on")
+            m.assertTrue(SettingsStore.IsMyMediaRowShown(invalid))
+            m.assertTrue(SettingsStore.IsMyMediaRowShown({}))
+        end function
+
+        @it("hides the My Media row only for off")
+        function _()
+            settings = {}
+            settings[SettingsStore.Key.ShowMyMediaRow] = "OFF"
+
+            m.assertFalse(SettingsStore.IsMyMediaRowShown(settings))
+            settings[SettingsStore.Key.ShowMyMediaRow] = "on"
+            m.assertTrue(SettingsStore.IsMyMediaRowShown(settings))
+        end function
+
+        @it("persists the My Media row preference per account")
+        function _()
+            m.snapshotMigrationRegistry([])
+            for each name in ["STARFIN_ROKU", RegistryStore.AccountSectionName("rooibos-mymedia-a"), RegistryStore.AccountSectionName("rooibos-mymedia-b")]
+                section = CreateObject("roRegistrySection", name)
+                m.registrySnapshot[name] = section.ReadMulti(section.GetKeyList())
+            end for
+            settings = SettingsStore.Defaults()
+            settings[SettingsStore.Key.ShowMyMediaRow] = "off"
+            SettingsStore.Save("rooibos-mymedia-a", settings)
+            settings[SettingsStore.Key.ShowMyMediaRow] = "on"
+            SettingsStore.Save("rooibos-mymedia-b", settings)
+
+            m.assertEqual(SettingsStore.Load("rooibos-mymedia-a")[SettingsStore.Key.ShowMyMediaRow], "off")
+            m.assertEqual(SettingsStore.Load("rooibos-mymedia-b")[SettingsStore.Key.ShowMyMediaRow], "on")
+        end function
+
     end class
 
 end namespace

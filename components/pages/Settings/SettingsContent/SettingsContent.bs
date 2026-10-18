@@ -73,9 +73,9 @@ sub initReferences()
     m.resetStarfinState = { confirmationVisible: false }
     m.accountUi = { state: invalid }
     m.categoryState = {
-        userTitles: ["Libraries", "Media shell", "Theme", "Playback", "Subtitles", "TV", "Screensaver"]
-        panelComponents: ["SettingsLibrariesPanel", "SettingsMediaShellPanel", "SettingsThemePanel", "SettingsPlaybackPanel", "SettingsSubtitlesPanel", "SettingsTVPanel", "SettingsScreensaverPanel", "SettingsGeneralPanel", "SettingsVideoPanel", "SettingsAdvancedPanel"]
-        panelIds: ["libraryPanel", "mediaShellPanel", "themePanel", "playbackPanel", "accountSubtitlesPanel", "tvPanel", "screensaverPanel", "systemPanel", "videoPanel", "advancedPanel"]
+        userTitles: ["Libraries", "Media shell", "Theme", "Playback", "Subtitles", "TV", "Screensaver", "Home"]
+        panelComponents: ["SettingsLibrariesPanel", "SettingsMediaShellPanel", "SettingsThemePanel", "SettingsPlaybackPanel", "SettingsSubtitlesPanel", "SettingsTVPanel", "SettingsScreensaverPanel", "SettingsHomePanel", "SettingsGeneralPanel", "SettingsVideoPanel", "SettingsAdvancedPanel"]
+        panelIds: ["libraryPanel", "mediaShellPanel", "themePanel", "playbackPanel", "accountSubtitlesPanel", "tvPanel", "screensaverPanel", "homePanel", "systemPanel", "videoPanel", "advancedPanel"]
         deviceTitles: ["General", "Video", "Advanced"]
     }
     m.categoryState.userCount = m.categoryState.userTitles.Count()
@@ -191,14 +191,17 @@ sub initCategoryReferences(index as integer, panel as object)
         m.settingsControls.screensaverDelayOptions = panel.findNode("screensaverDelayOptions")
         m.categoryControls[index] = [m.settingsControls.screensaverTypeOptions, m.settingsControls.screensaverDelayOptions]
     else if index = 7 then
+        m.settingsControls.showMyMediaRowOptions = panel.findNode("showMyMediaRowOptions")
+        m.categoryControls[index] = [m.settingsControls.showMyMediaRowOptions]
+    else if index = 8 then
         m.settingsControls.displayAccountBadgeOptions = panel.findNode("displayAccountBadgeOptions")
         m.settingsControls.tmdbApiKeyInput = panel.findNode("tmdbApiKeyInput")
         m.categoryControls[index] = [m.settingsControls.displayAccountBadgeOptions, m.settingsControls.tmdbApiKeyInput]
-    else if index = 8 then
+    else if index = 9 then
         m.settingsControls.videoStreamingModeOptions = panel.findNode("videoStreamingModeOptions")
         m.videoStreamingModeCard = panel.findNode("videoStreamingModeCard")
         m.categoryControls[index] = [m.settingsControls.videoStreamingModeOptions]
-    else if index = 9 then
+    else if index = 10 then
         m.settingsControls.resetStarfinButton = panel.findNode("resetStarfinButton")
         m.settingsControls.abortResetButton = panel.findNode("abortResetButton")
         m.settingsControls.eraseAllDataButton = panel.findNode("eraseAllDataButton")
@@ -242,11 +245,13 @@ sub initCategoryHandlers(index as integer)
         m.settingsControls.screensaverTypeOptions.observeField("itemSelected", "onScreensaverTypeSelected")
         m.settingsControls.screensaverDelayOptions.observeField("itemSelected", "onScreensaverDelaySelected")
     else if index = 7 then
-        m.settingsControls.displayAccountBadgeOptions.observeField("itemSelected", "onDisplayAccountBadgeSelected")
+        m.settingsControls.showMyMediaRowOptions.observeField("itemSelected", "onShowMyMediaRowSelected")
     else if index = 8 then
+        m.settingsControls.displayAccountBadgeOptions.observeField("itemSelected", "onDisplayAccountBadgeSelected")
+    else if index = 9 then
         m.settingsControls.videoStreamingModeOptions.observeField("itemSelected", "onVideoStreamingModeSelected")
         m.settingsControls.videoStreamingModeOptions.observeField("itemFocused", "onVideoStreamingModeFocused")
-    else if index = 9 then
+    else if index = 10 then
         m.settingsControls.resetStarfinButton.observeField("buttonSelected", "onResetStarfinSelected")
         m.settingsControls.abortResetButton.observeField("buttonSelected", "onAbortResetSelected")
         m.settingsControls.eraseAllDataButton.observeField("buttonSelected", "onEraseAllDataSelected")
@@ -286,9 +291,11 @@ sub applyCategoryValues(index as integer)
         setScreensaverTypeOption(m.settingsState.values[SettingsStore.Key.ScreensaverType])
         setScreensaverDelayOption(m.settingsState.values[SettingsStore.Key.ScreensaverDelay])
     else if index = 7 then
+        setOnOffOption(m.settingsControls.showMyMediaRowOptions, m.settingsState.values[SettingsStore.Key.ShowMyMediaRow])
+    else if index = 8 then
         setOnOffOption(m.settingsControls.displayAccountBadgeOptions, m.settingsState.values[SettingsStore.Key.DisplayAccountBadge])
         m.settingsControls.tmdbApiKeyInput.text = m.settingsState.values[SettingsStore.Key.TmdbApiKey]
-    else if index = 8 then
+    else if index = 9 then
         setVideoStreamingModeOption(m.settingsState.values[SettingsStore.Key.VideoStreamingMode])
     end if
 end sub
@@ -347,8 +354,10 @@ sub initCategoryOptions(index as integer)
         setOptionTitles(m.settingsControls.screensaverTypeOptions, ["None", "Bouncing artwork", "Starfield"])
         setOptionTitles(m.settingsControls.screensaverDelayOptions, ["1 minute", "5 minutes", "15 minutes", "30 minutes"])
     else if index = 7 then
-        setOptionTitles(m.settingsControls.displayAccountBadgeOptions, ["Off", "On"])
+        setOptionTitles(m.settingsControls.showMyMediaRowOptions, ["Off", "On"])
     else if index = 8 then
+        setOptionTitles(m.settingsControls.displayAccountBadgeOptions, ["Off", "On"])
+    else if index = 9 then
         setOptionTitles(m.settingsControls.videoStreamingModeOptions, ["Automatic", "Automatic (remux disabled)", "Force transcode (allow remux)", "Force transcode (remux disabled)"])
     end if
 end sub
@@ -743,6 +752,18 @@ sub onShowSeasonSummaryCardSelected()
     value = "off"
     if selectedIndex = 1 then value = "on"
     m.settingsState.values[SettingsStore.Key.ShowSeasonSummaryCard] = value
+end sub
+
+'-------------------------------------------------------------------------------
+' onShowMyMediaRowSelected
+'-------------------------------------------------------------------------------
+sub onShowMyMediaRowSelected()
+    selectedIndex = getSelectedItemIndex(m.settingsControls.showMyMediaRowOptions)
+    if selectedIndex < 0 then return
+    m.settingsControls.showMyMediaRowOptions.checkedItem = selectedIndex
+    value = "off"
+    if selectedIndex = 1 then value = "on"
+    m.settingsState.values[SettingsStore.Key.ShowMyMediaRow] = value
 end sub
 
 '-------------------------------------------------------------------------------

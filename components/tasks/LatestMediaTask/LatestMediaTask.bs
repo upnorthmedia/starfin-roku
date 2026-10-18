@@ -34,10 +34,10 @@ sub executeRequest()
             userId: TaskRequest.GetUserId(request)
             limit: Number.ToInteger(request.limit, 25)
             parentId: Strings.ToString(request.parentId)
-            enableImageTypes: Strings.Join([JellyfinImage.Type.Primary, JellyfinImage.Type.Backdrop, JellyfinImage.Type.Thumb], ", ")
+            enableImageTypes: Strings.Join([JellyfinImage.Type.Primary, JellyfinImage.Type.Backdrop, JellyfinImage.Type.Thumb, JellyfinImage.Type.Logo], ", ")
             imageTypeLimit: 1
             enableTotalRecordCount: false
-            fields: "Genres"
+            fields: "Genres,Overview"
         }
 
         requestUrl = request.server + "/items/latest" + Url.BuildQueryString(params)
