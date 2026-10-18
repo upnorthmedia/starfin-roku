@@ -1465,6 +1465,26 @@ namespace tests
             m.assertTrue(m.node.homeState.shelfNodes[0].isSameNode(shelf))
         end function
 
+
+        @describe("billboard layout")
+
+        @it("shows the billboard above a shorter shelf viewport for skins and hides it for Blue")
+        function _()
+            originalTheme = m.global.theme
+            m.global.theme = "liquid-glass"
+
+            m.assertTrue(m.top.findNode("billboard").visible)
+            m.assertEqual(m.top.findNode("shelfViewport").translation, [0.0, 460.0])
+            m.assertEqual(m.top.findNode("shelfViewport").clippingRect, [0.0, 0.0, 1824.0, 500.0])
+
+            m.global.theme = "blue"
+
+            m.assertFalse(m.top.findNode("billboard").visible)
+            m.assertEqual(m.top.findNode("shelfViewport").translation, [0.0, 20.0])
+            m.assertEqual(m.top.findNode("shelfViewport").clippingRect, [0.0, 0.0, 1824.0, 940.0])
+            m.global.theme = originalTheme
+        end function
+
     end class
 
 end namespace

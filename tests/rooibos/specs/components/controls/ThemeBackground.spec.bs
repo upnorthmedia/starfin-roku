@@ -176,6 +176,27 @@ namespace tests
             m.assertEqual(m.top.findNode("gradient").uri, "pkg:/images/themes/black/background.png")
         end function
 
+
+        @it("constructs Liquid Glass with its own canvas")
+        function _()
+            m.global.theme = "liquid-glass"
+
+            background = CreateObject("roSGNode", "ThemeBackground")
+
+            m.assertEqual(background.findNode("fill").color, &h0C1018FF)
+            m.assertTrue(background.findNode("gradient").visible)
+            m.assertEqual(background.findNode("gradient").uri, "pkg:/images/themes/liquid-glass/background.png")
+        end function
+
+        @it("switches to the Cinema canvas when global theme changes")
+        function _()
+            m.global.theme = "cinema"
+
+            m.assertEqual(m.top.findNode("fill").color, &h141414FF)
+            m.assertTrue(m.top.findNode("gradient").visible)
+            m.assertEqual(m.top.findNode("gradient").uri, "pkg:/images/themes/cinema/background.png")
+        end function
+
     end class
 
 end namespace

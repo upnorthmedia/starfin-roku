@@ -1,3 +1,4 @@
+import "pkg:/source/Theme.bs"
 import "pkg:/source/UnwatchedEpisodeCount.bs"
 import "pkg:/source/WatchedAction.bs"
 import "pkg:/source/MediaState.bs"
@@ -421,7 +422,7 @@ sub applyMediaShellLayout(settings as dynamic)
     m.seasonsGrid.itemSize = (isPoster ? [400, 672] : [207, 381])
     m.seasonsGrid.itemSpacing = (isPoster ? [24, 0] : [21, 33])
     m.seasonsGrid.numColumns = (isPoster ? 4 : 8)
-    m.seasonsGrid.focusBitmapUri = (isPoster ? "pkg:/images/tv-show/season-poster-focus-400x672.png" : "pkg:/images/tv-show/season-poster-focus-207x381.png")
+    m.seasonsGrid.focusBitmapUri = Theme.FocusFrameUri(m.global.theme, (isPoster ? "pkg:/images/tv-show/season-poster-focus-400x672.png" : "pkg:/images/tv-show/season-poster-focus-207x381.png"))
     positionSeasonsGrid()
     m.cast.displayEnabled = isPoster <> true
     if isPoster then m.cast.callFunc("deactivate")

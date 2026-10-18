@@ -71,6 +71,24 @@ namespace tests
             m.assertEqual(bar.findNode("fill").width, 0.0)
         end function
 
+
+        @it("uses the Liquid Glass track art without a border and restores the shared art for Blue")
+        function _()
+            originalTheme = m.global.theme
+            m.global.theme = "liquid-glass"
+            bar = CreateObject("roSGNode", "ProgressBar")
+
+            m.assertFalse(bar.findNode("border").visible)
+            m.assertEqual(bar.findNode("background").uri, "pkg:/images/themes/liquid-glass/fhd/progress-track.9.png")
+            m.assertEqual(bar.findNode("fill").uri, "pkg:/images/themes/liquid-glass/fhd/progress-fill.9.png")
+
+            m.global.theme = "blue"
+
+            m.assertTrue(bar.findNode("border").visible)
+            m.assertEqual(bar.findNode("fill").uri, "pkg:/images/progress/progress-fill.9.png")
+            m.global.theme = originalTheme
+        end function
+
     end class
 
 end namespace

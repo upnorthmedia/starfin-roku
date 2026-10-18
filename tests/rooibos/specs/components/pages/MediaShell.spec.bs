@@ -1059,6 +1059,29 @@ namespace tests
             m.assertFalse(m.top.findNode("contentGradient").visible)
         end function
 
+
+        @describe("themes")
+
+        @it("fades Cinema backdrops with a full-screen gradient and restores the strip for Blue")
+        function _()
+            originalTheme = m.global.theme
+            gradient = m.top.findNode("contentGradient")
+            m.global.theme = "cinema"
+
+            m.assertEqual(gradient.uri, "pkg:/images/themes/cinema/media-shell-gradient.png")
+            m.assertEqual(gradient.translation, [0.0, 0.0])
+            m.assertEqual(gradient.height, 1080.0)
+            m.assertEqual(m.top.findNode("mediaBackgroundFull").opacity, 0.75)
+
+            m.global.theme = "blue"
+
+            m.assertEqual(gradient.uri, "pkg:/images/overlays/bottom-content-gradient.png")
+            m.assertEqual(gradient.translation, [0.0, 490.0])
+            m.assertEqual(gradient.height, 740.0)
+            m.assertEqual(m.top.findNode("mediaBackgroundFull").opacity, 0.5)
+            m.global.theme = originalTheme
+        end function
+
     end class
 
 end namespace

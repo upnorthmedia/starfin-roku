@@ -6,6 +6,7 @@ import "pkg:/source/MediaMetadataFormatting.bs"
 import "pkg:/source/ResolutionAssets.bs"
 import "pkg:/source/ResolutionProfile.bs"
 import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -13,6 +14,7 @@ import "pkg:/source/Theme.bs"
 sub init()
     initBase()
     m.cardNodes.title.font = "font:SmallBoldSystemFont"
+    ThemeFont.Apply(m.cardNodes.title, m.global.theme)
     m.cardNodes.metadataRow = m.top.findNode("metadataRow")
     m.cardNodes.contentGroup.appendChild(m.cardNodes.metadataRow)
     m.cardNodes.titleDivider = m.top.findNode("titleDivider")

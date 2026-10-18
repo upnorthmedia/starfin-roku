@@ -430,6 +430,47 @@ namespace tests
             return { server: "http://server", userId: "user-1", token: "token", primaryImageTag: "" }
         end function
 
+
+        @describe("navigation glass themes")
+
+        @it("keeps Blue's navigation glass for the original themes")
+        function _()
+            originalTheme = m.global.theme
+            glass = m.top.findNode("navGlassBackground")
+            m.global.theme = "grey"
+
+            m.assertTrue(glass.visible)
+            m.assertEqual(glass.uri, "pkg:/images/themes/blue/fhd/header-menu-glass.9.png")
+            m.global.theme = originalTheme
+        end function
+
+        @it("switches the navigation glass for Liquid Glass")
+        function _()
+            originalTheme = m.global.theme
+            glass = m.top.findNode("navGlassBackground")
+            m.global.theme = "liquid-glass"
+
+            m.assertTrue(glass.visible)
+            m.assertEqual(glass.uri, "pkg:/images/themes/liquid-glass/fhd/nav-glass.9.png")
+            m.global.theme = originalTheme
+        end function
+
+        @it("hides the navigation glass for Cinema and restores it afterwards")
+        function _()
+            originalTheme = m.global.theme
+            glass = m.top.findNode("navGlassBackground")
+            m.global.theme = "cinema"
+
+            m.assertFalse(glass.visible)
+            m.assertEqual(glass.uri, "")
+
+            m.global.theme = "blue"
+
+            m.assertTrue(glass.visible)
+            m.assertEqual(glass.uri, "pkg:/images/themes/blue/fhd/header-menu-glass.9.png")
+            m.global.theme = originalTheme
+        end function
+
     end class
 
 end namespace

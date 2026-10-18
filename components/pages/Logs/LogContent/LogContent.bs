@@ -1,3 +1,4 @@
+import "pkg:/source/ThemeFont.bs"
 import "pkg:/source/Remote.bs"
 import "pkg:/source/Char.bs"
 import "pkg:/source/Number.bs"
@@ -103,6 +104,7 @@ function createLabel(x as integer, width as integer, font as string) as object
     label.width = width
     label.height = m.logViewState.rowHeight
     label.font = font
+    ThemeFont.Apply(label, m.global.theme)
     label.vertAlign = "center"
     label.wrap = false
     label.numLines = 1

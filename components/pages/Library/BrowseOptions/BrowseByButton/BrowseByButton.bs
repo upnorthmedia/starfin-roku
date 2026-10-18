@@ -2,6 +2,8 @@ import "pkg:/source/String.bs"
 import "pkg:/source/Remote.bs"
 import "pkg:/source/ResolutionProfile.bs"
 import "pkg:/source/ResolutionAssets.bs"
+import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -10,6 +12,8 @@ sub init()
     m.background = m.top.findNode("background")
     m.sortLabel = m.top.findNode("sortLabel")
     m.top.observeField("focusedChild", "onFocusChanged")
+    m.global.observeField("theme", "updateFocusVisual")
+    ThemeFont.Apply(m.top, m.global.theme)
     updateSortDisplay()
     updateFocusVisual()
 end sub
@@ -26,13 +30,14 @@ end sub
 '-------------------------------------------------------------------------------
 sub updateFocusVisual()
     hasFocus = m.top.isInFocusChain()
+    palette = Theme.Button(m.global.theme)
 
     if hasFocus then
-        m.background.uri = ResolutionAssets.GetButtonImageUri("primary-focused.9.png")
-        m.sortLabel.color = &h0F1A2AFF
+        m.background.uri = palette.focusedUri
+        m.sortLabel.color = palette.focusedText
     else
-        m.background.uri = ResolutionAssets.GetButtonImageUri("primary-unfocused.9.png")
-        m.sortLabel.color = &hFFFFFFFF
+        m.background.uri = palette.unfocusedUri
+        m.sortLabel.color = palette.text
     end if
 end sub
 

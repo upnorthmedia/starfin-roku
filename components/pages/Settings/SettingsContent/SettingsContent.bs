@@ -2,6 +2,7 @@ import "pkg:/source/AutoSkip.bs"
 import "pkg:/source/Remote.bs"
 import "pkg:/source/UnwatchedEpisodeCount.bs"
 import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 import "pkg:/source/Char.bs"
 import "pkg:/source/HomeEpisodeImages.bs"
 import "pkg:/source/PlaybackMode.bs"
@@ -117,6 +118,7 @@ sub ensureCategoryPanel(index as integer)
     panel.translation = [400, 0]
     panel.visible = false
     m.top.appendChild(panel)
+    ThemeFont.Apply(panel, m.global.theme)
     m.categoryPanels[index] = panel
     initCategoryReferences(index, panel)
     initCardLayout(panel)
@@ -325,7 +327,7 @@ sub initCategoryOptions(index as integer)
     else if index = 2 then
         setOptionTitles(m.settingsControls.showUnwatchedEpisodeCountOptions, ["Off", "Subtle", "High contrast"])
         setOptionTitles(m.settingsControls.watchedIndicatorOptions, ["Subtle", "High contrast"])
-        setOptionTitles(m.settingsControls.themeOptions, ["Blue gradient", "Black gradient", "Grey gradient", "Pure Black"])
+        setOptionTitles(m.settingsControls.themeOptions, ["Blue gradient", "Black gradient", "Grey gradient", "Pure Black", "Liquid Glass", "Cinema"])
     else if index = 3 then
         setOptionTitles(m.settingsControls.nextItemPlaybackOptions, ["Show " + Char.DoubleQuote + "Up Next" + Char.DoubleQuote, "Play next immediately"])
         setOptionTitles(m.settingsControls.autoSkipIntrosOptions, ["Off", "On"])
@@ -1109,7 +1111,7 @@ end function
 sub onThemeSelected()
     selectedIndex = getSelectedItemIndex(m.settingsControls.themeOptions)
     if selectedIndex < 0 then return
-    values = [Theme.Mode.Blue, Theme.Mode.Black, Theme.Mode.Grey, Theme.Mode.PureBlack]
+    values = [Theme.Mode.Blue, Theme.Mode.Black, Theme.Mode.Grey, Theme.Mode.PureBlack, Theme.Mode.LiquidGlass, Theme.Mode.Cinema]
     m.settingsControls.themeOptions.checkedItem = selectedIndex
     m.settingsState.values[SettingsStore.Key.Theme] = values[selectedIndex]
     m.top.themePreviewRequested = values[selectedIndex]
@@ -1119,7 +1121,7 @@ end sub
 ' setThemeOption
 '-------------------------------------------------------------------------------
 sub setThemeOption(value as dynamic)
-    values = [Theme.Mode.Blue, Theme.Mode.Black, Theme.Mode.Grey, Theme.Mode.PureBlack]
+    values = [Theme.Mode.Blue, Theme.Mode.Black, Theme.Mode.Grey, Theme.Mode.PureBlack, Theme.Mode.LiquidGlass, Theme.Mode.Cinema]
     for i = 0 to values.Count() - 1
         if values[i] = value then
             m.settingsControls.themeOptions.checkedItem = i

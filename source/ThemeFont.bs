@@ -1,0 +1,190 @@
+import "pkg:/source/Theme.bs"
+
+namespace ThemeFont
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.Apply
+    '---------------------------------------------------------------------------
+    ' Walks a node subtree and swaps every Roku system font for the theme's
+    ' bundled typeface at the equivalent size, or restores the system font when
+    ' the theme has no typeface. Grid and list item renderers are not children
+    ' of their lists, so item components call this on themselves.
+    '---------------------------------------------------------------------------
+    sub Apply(root as object, value as dynamic)
+        if root = invalid then return
+        __ApplyTree(root, Theme.Fonts(value))
+    end sub
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.Describe
+    '---------------------------------------------------------------------------
+    ' Weight and size of a Roku system font. System Font nodes expose no name,
+    ' so weight is recovered by comparing rendered widths against the bold
+    ' system font at the same size; every system token shares one typeface.
+    '---------------------------------------------------------------------------
+    function Describe(font as object) as object
+        size = font.size
+        width = __MeasureWidth(font, "")
+        reference = __ReferenceWidths(size)
+        return { bold: Abs(width - reference.bold) < Abs(width - reference.regular), size: size }
+    end function
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__ReferenceWidths
+    '---------------------------------------------------------------------------
+    ' Regular and bold system font widths per size, measured once per thread.
+    '---------------------------------------------------------------------------
+    function __ReferenceWidths(size as integer) as object
+        cache = GetGlobalAA().themeFontReferenceWidths
+        if cache = invalid then
+            cache = {}
+            GetGlobalAA().themeFontReferenceWidths = cache
+        end if
+        key = size.ToStr()
+        widths = cache[key]
+        if widths = invalid then
+            widths = {
+                bold: __MeasureWidth(invalid, "font:MediumBoldSystemFont", size)
+                regular: __MeasureWidth(invalid, "font:MediumSystemFont", size)
+            }
+            cache[key] = widths
+        end if
+        return widths
+    end function
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.ScaledSize
+    '---------------------------------------------------------------------------
+    ' Bundled typefaces have taller metrics than Roku's font, so they are drawn
+    ' slightly smaller to keep the same cap height and label footprint.
+    '---------------------------------------------------------------------------
+    function ScaledSize(size as integer, family as object) as integer
+        scaled = Cint(size * family.scale)
+        if scaled < 12 then scaled = 12
+        return scaled
+    end function
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__ApplyTree
+    '---------------------------------------------------------------------------
+    sub __ApplyTree(node as object, family as dynamic)
+        __ApplyNode(node, family)
+        for each child in node.getChildren(-1, 0)
+            __ApplyTree(child, family)
+        end for
+    end sub
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__ApplyNode
+    '---------------------------------------------------------------------------
+    sub __ApplyNode(node as object, family as dynamic)
+        for each fieldName in ["font", "focusedFont", "textFont", "focusedTextFont"]
+            if node.hasField(fieldName) then
+                current = node.getField(fieldName)
+                ' Custom components may declare string fields with these names.
+                if __IsFontNode(current) and (family <> invalid or current.uri <> "") then
+                    info = __ResolveInfo(node, fieldName, current)
+                    if info <> invalid then
+                        if family = invalid then
+                            __RestoreSystemFont(node, fieldName, current, info)
+                        else
+                            __ApplyFamily(node, fieldName, current, info, family)
+                        end if
+                    end if
+                end if
+            end if
+        end for
+    end sub
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__IsFontNode
+    '---------------------------------------------------------------------------
+    function __IsFontNode(value as dynamic) as boolean
+        if Type(value) <> "roSGNode" then return false
+        return value.subtype() = "Font"
+    end function
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__ApplyFamily
+    '---------------------------------------------------------------------------
+    sub __ApplyFamily(node as object, fieldName as string, current as object, info as object, family as object)
+        uri = family.regular
+        if info.bold then uri = family.bold
+        size = ScaledSize(info.size, family)
+        if current.uri = uri and current.size = size then return
+        node.setField(fieldName, __SharedFont(uri, size))
+    end sub
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__SharedFont
+    '---------------------------------------------------------------------------
+    ' One Font node per typeface and size, shared by every label on the render
+    ' thread; a Font node per label exhausts texture memory on low-end devices.
+    '---------------------------------------------------------------------------
+    function __SharedFont(uri as string, size as integer) as object
+        cache = GetGlobalAA().themeFontCache
+        if cache = invalid then
+            cache = {}
+            GetGlobalAA().themeFontCache = cache
+        end if
+        key = uri + "@" + size.ToStr()
+        font = cache[key]
+        if font = invalid then
+            font = CreateObject("roSGNode", "Font")
+            font.uri = uri
+            font.size = size
+            cache[key] = font
+        end if
+        return font
+    end function
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__RestoreSystemFont
+    '---------------------------------------------------------------------------
+    sub __RestoreSystemFont(node as object, fieldName as string, current as object, info as object)
+        if current.uri = "" then return
+        token = "font:MediumSystemFont"
+        if info.bold then token = "font:MediumBoldSystemFont"
+        node.setField(fieldName, token)
+        restored = node.getField(fieldName)
+        if restored <> invalid and restored.size <> info.size then restored.size = info.size
+    end sub
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__ResolveInfo
+    '---------------------------------------------------------------------------
+    ' Returns the system font weight and size behind a field, remembering them
+    ' on the node so a bundled typeface can later be swapped back. Fields that
+    ' already carry another custom font file are left alone.
+    '---------------------------------------------------------------------------
+    function __ResolveInfo(node as object, fieldName as string, current as object) as dynamic
+        infos = invalid
+        if node.hasField("themeFontInfo") then infos = node.themeFontInfo
+        if infos <> invalid and infos[fieldName] <> invalid then return infos[fieldName]
+        if current.uri <> "" then return invalid
+        info = Describe(current)
+        if infos = invalid then
+            infos = {}
+            node.addField("themeFontInfo", "assocarray", false)
+        end if
+        infos[fieldName] = info
+        node.themeFontInfo = infos
+        return info
+    end function
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__MeasureWidth
+    '---------------------------------------------------------------------------
+    function __MeasureWidth(font as dynamic, token as string, size = 0 as integer) as float
+        label = CreateObject("roSGNode", "Label")
+        if font <> invalid then
+            label.font = font
+        else
+            label.font = token
+            if size > 0 then label.font.size = size
+        end if
+        label.text = "Hamburgefonstiv"
+        return label.boundingRect().width
+    end function
+
+end namespace

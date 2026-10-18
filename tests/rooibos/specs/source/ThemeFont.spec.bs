@@ -1,0 +1,105 @@
+namespace tests
+
+    @suite("ThemeFont helpers")
+    class ThemeFontTests extends rooibos.BaseTestSuite
+
+        @describe("system font detection")
+
+        @it("describes a bold system font")
+        function _()
+            label = CreateObject("roSGNode", "Label")
+            label.font = "font:SmallBoldSystemFont"
+
+            info = ThemeFont.Describe(label.font)
+
+            m.assertTrue(info.bold)
+            m.assertEqual(info.size, 33)
+        end function
+
+        @it("describes a regular system font")
+        function _()
+            label = CreateObject("roSGNode", "Label")
+            label.font = "font:SmallerSystemFont"
+
+            info = ThemeFont.Describe(label.font)
+
+            m.assertFalse(info.bold)
+            m.assertEqual(info.size, 30)
+        end function
+
+        @it("scales sizes for the bundled typeface metrics")
+        function _()
+            m.assertEqual(ThemeFont.ScaledSize(36, Theme.Fonts("liquid-glass")), 32)
+            m.assertEqual(ThemeFont.ScaledSize(10, Theme.Fonts("cinema")), 12)
+        end function
+
+        @describe("applying a typeface")
+
+        @it("swaps system fonts for the Cinema typeface and keeps weight")
+        function _()
+            group = CreateObject("roSGNode", "Group")
+            regular = group.createChild("Label")
+            regular.font = "font:MediumSystemFont"
+            bold = group.createChild("Label")
+            bold.font = "font:MediumBoldSystemFont"
+
+            ThemeFont.Apply(group, "cinema")
+
+            m.assertEqual(regular.font.uri, "pkg:/fonts/cinema/Montserrat-Medium.ttf")
+            m.assertEqual(regular.font.size, 32)
+            m.assertEqual(bold.font.uri, "pkg:/fonts/cinema/Montserrat-SemiBold.ttf")
+            m.assertEqual(bold.font.size, 32)
+        end function
+
+        @it("restores system fonts at their original size when switching back")
+        function _()
+            group = CreateObject("roSGNode", "Group")
+            bold = group.createChild("Label")
+            bold.font = "font:LargeBoldSystemFont"
+            ThemeFont.Apply(group, "liquid-glass")
+
+            ThemeFont.Apply(group, "blue")
+
+            m.assertEqual(bold.font.uri, "")
+            m.assertEqual(bold.font.size, 45)
+            m.assertTrue(ThemeFont.Describe(bold.font).bold)
+        end function
+
+        @it("leaves custom font files untouched")
+        function _()
+            label = CreateObject("roSGNode", "Label")
+            custom = CreateObject("roSGNode", "Font")
+            custom.uri = "pkg:/fonts/liquid-glass/Inter-Regular.ttf"
+            custom.size = 20
+            label.font = custom
+
+            ThemeFont.Apply(label, "cinema")
+
+            m.assertEqual(label.font.uri, "pkg:/fonts/liquid-glass/Inter-Regular.ttf")
+            m.assertEqual(label.font.size, 20)
+        end function
+
+        @it("applies to list fonts and their focused variants")
+        function _()
+            list = CreateObject("roSGNode", "RadioButtonList")
+
+            ThemeFont.Apply(list, "liquid-glass")
+
+            m.assertEqual(list.font.uri, "pkg:/fonts/liquid-glass/Inter-Regular.ttf")
+            m.assertEqual(list.focusedFont.uri, "pkg:/fonts/liquid-glass/Inter-SemiBold.ttf")
+        end function
+
+        @it("does nothing for the original themes")
+        function _()
+            label = CreateObject("roSGNode", "Label")
+            label.font = "font:SmallSystemFont"
+
+            ThemeFont.Apply(label, "grey")
+
+            m.assertEqual(label.font.uri, "")
+            m.assertEqual(label.font.size, 33)
+        end function
+
+    end class
+
+end namespace

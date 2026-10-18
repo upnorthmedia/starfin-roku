@@ -1,3 +1,4 @@
+import "pkg:/source/ThemeFont.bs"
 import "pkg:/source/String.bs"
 import "pkg:/source/Theme.bs"
 
@@ -5,6 +6,7 @@ import "pkg:/source/Theme.bs"
 ' init
 '-------------------------------------------------------------------------------
 sub init()
+    ThemeFont.Apply(m.top, m.global.theme)
     m.dateLabel = m.top.findNode("dateLabel")
     m.titleLabel = m.top.findNode("titleLabel")
     m.characterLabel = m.top.findNode("characterLabel")
@@ -66,14 +68,18 @@ sub updateFocusStyle(hasFocus as boolean)
     if hasFocus = true then
         m.dateLabel.color = colors.text.dark.primary
         m.dateLabel.font = "font:SmallBoldSystemFont"
+        ThemeFont.Apply(m.dateLabel, m.global.theme)
         m.titleLabel.color = colors.text.dark.primary
         m.titleLabel.font = "font:SmallBoldSystemFont"
+        ThemeFont.Apply(m.titleLabel, m.global.theme)
         m.characterLabel.color = colors.text.dark.primary
     else
         m.dateLabel.color = colors.text.light.secondary
         m.dateLabel.font = "font:SmallSystemFont"
+        ThemeFont.Apply(m.dateLabel, m.global.theme)
         m.titleLabel.color = colors.text.light.primary
         m.titleLabel.font = "font:SmallSystemFont"
+        ThemeFont.Apply(m.titleLabel, m.global.theme)
         m.characterLabel.color = colors.text.light.secondary
     end if
 end sub

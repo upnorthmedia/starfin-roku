@@ -361,6 +361,26 @@ namespace tests
             m.assertTrue(m.node.iconPoster.translation[0] = rightInset - 2)
         end function
 
+
+        @describe("themes")
+
+        @it("uses the Cinema pills and text colors")
+        function _()
+            originalTheme = m.global.theme
+            m.global.theme = "cinema"
+            m.top.hasFocusVisual = false
+
+            m.assertEqual(m.node.background.uri, "pkg:/images/themes/cinema/fhd/pill.9.png")
+            m.assertEqual(m.node.textLabel.color, &hF3F7FBFF)
+
+            m.top.hasFocusVisual = true
+
+            m.assertEqual(m.node.background.uri, "pkg:/images/themes/cinema/fhd/pill-focused.9.png")
+            m.assertEqual(m.node.textLabel.color, &h000000FF)
+            m.top.hasFocusVisual = false
+            m.global.theme = originalTheme
+        end function
+
     end class
 
 end namespace

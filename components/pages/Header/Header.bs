@@ -60,7 +60,7 @@ end sub
 ' initHandlers
 '-------------------------------------------------------------------------------
 sub initHandlers()
-    m.global.observeField("theme", "updateAccountBadgeTheme")
+    m.global.observeField("theme", "updateHeaderTheme")
     m.homeButton.observeField("buttonSelected", "onHomePressed")
     m.searchButton.observeField("buttonSelected", "onSearchPressed")
     m.systemButton.observeField("buttonSelected", "onSystemPressed")
@@ -75,13 +75,12 @@ end sub
 sub initStyle()
     palette = Theme.Get()
     configureAccountBadgePosition()
-    m.navGlassBackground.uri = Theme.HeaderMenu(Theme.Mode.Blue).glassUri
     headerBgColor = palette.background.header
     m.homeButton.headerBgColor = headerBgColor
     m.searchButton.headerBgColor = headerBgColor
     m.systemButton.headerBgColor = headerBgColor
     m.userMenuButton.headerBgColor = headerBgColor
-    updateAccountBadgeTheme()
+    updateHeaderTheme()
     m.systemDropdownMenu.items = getSystemDropdownItems()
     m.accountDropdownMenu.items = getAccountDropdownItems()
 end sub
@@ -524,4 +523,14 @@ sub updateAccountBadgeTheme()
     m.accountBadge.backgroundColor = palette.background
     m.accountBadge.ringColor = palette.ring
     m.accountBadge.glassColor = palette.glass
+end sub
+
+'-------------------------------------------------------------------------------
+' updateHeaderTheme
+'-------------------------------------------------------------------------------
+sub updateHeaderTheme()
+    navGlassUri = Theme.NavGlassUri(m.global.theme)
+    m.navGlassBackground.visible = navGlassUri <> ""
+    m.navGlassBackground.uri = navGlassUri
+    updateAccountBadgeTheme()
 end sub

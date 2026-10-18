@@ -1,4 +1,5 @@
 import "pkg:/source/ResolutionProfile.bs"
+import "pkg:/source/ResolutionAssets.bs"
 
 namespace Theme
 
@@ -7,7 +8,20 @@ namespace Theme
         Black = "black"
         Grey = "grey"
         PureBlack = "pure-black"
+        LiquidGlass = "liquid-glass"
+        Cinema = "cinema"
     end enum
+
+    '---------------------------------------------------------------------------
+    ' Theme.IsSkin
+    '---------------------------------------------------------------------------
+    ' Skins restyle every surface of the app. The four original themes only
+    ' switch the shared background, dialog, menu, tile and badge assets.
+    '---------------------------------------------------------------------------
+    function IsSkin(value as dynamic) as boolean
+        mode = Normalize(value)
+        return mode = Mode.LiquidGlass or mode = Mode.Cinema
+    end function
 
     '---------------------------------------------------------------------------
     ' Theme.DetailedCardBackgroundUri
@@ -27,6 +41,8 @@ namespace Theme
         if normalized = Mode.Black then return Mode.Black
         if normalized = Mode.Grey then return Mode.Grey
         if normalized = Mode.PureBlack then return Mode.PureBlack
+        if normalized = Mode.LiquidGlass then return Mode.LiquidGlass
+        if normalized = Mode.Cinema then return Mode.Cinema
         return Mode.Blue
     end function
 
@@ -37,6 +53,8 @@ namespace Theme
         mode = Theme.Normalize(value)
         if mode = Mode.Black then return &h121212FF
         if mode = Mode.Grey then return &h343434FF
+        if mode = Mode.LiquidGlass then return &h0C1018FF
+        if mode = Mode.Cinema then return &h141414FF
         return &h000000FF
     end function
 
@@ -62,6 +80,8 @@ namespace Theme
                 glass: palette.control.headerGlass
             }
         end if
+        if mode = Mode.LiquidGlass then return { background: &h0C1018FF, ring: &h1C2436FF, glass: &hE8ECF4FF }
+        if mode = Mode.Cinema then return { background: &h141414FF, ring: &h232323FF, glass: &hE5E5E5FF }
         ' Match the gradient near the badge; the matte covers square image corners.
         background = &h0B0B0BFF
         ring = &h121212FF
@@ -87,6 +107,12 @@ namespace Theme
         else if mode = Mode.Grey then
             fill = &h4A4A4AFF
             focusedText = &h242424FF
+        else if mode = Mode.LiquidGlass then
+            fill = &h3A4152FF
+            focusedText = &h141A2BFF
+        else if mode = Mode.Cinema then
+            fill = &h2A2A2AFF
+            focusedText = &h000000FF
         end if
         return {
             backgroundUri: "pkg:/images/themes/" + mode + "/square-button-background.png"
@@ -114,6 +140,8 @@ namespace Theme
         divider = &hF3F7FB33
         if mode = Mode.Black then focusedText = &h121212FF
         if mode = Mode.Grey then focusedText = &h242424FF
+        if mode = Mode.LiquidGlass then focusedText = &h141A2BFF
+        if mode = Mode.Cinema then focusedText = &h000000FF
         if mode <> Mode.Blue then divider = &hFFFFFF33
         return {
             fillUri: assetRoot + "header-menu-fill.9.png"
@@ -122,6 +150,235 @@ namespace Theme
             focusedText: focusedText
             divider: divider
         }
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.NavGlassUri
+    '---------------------------------------------------------------------------
+    ' The header navigation strip keeps Blue's glass for the original themes.
+    ' Cinema hides the strip entirely and returns an empty uri.
+    '---------------------------------------------------------------------------
+    function NavGlassUri(value as dynamic) as string
+        mode = Normalize(value)
+        if mode = Mode.Cinema then return ""
+        if mode = Mode.LiquidGlass then return __SkinAssetUri(mode, "nav-glass.9.png")
+        return "pkg:/images/themes/blue/" + ResolutionProfile.GetName() + "/header-menu-glass.9.png"
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.HeaderButton
+    '---------------------------------------------------------------------------
+    ' activeUsesFocusedText keeps the original dark text on the translucent
+    ' active pill; Cinema shows the active section as plain white text instead.
+    '---------------------------------------------------------------------------
+    function HeaderButton(value as dynamic) as object
+        mode = Normalize(value)
+        if mode = Mode.Cinema then
+            return {
+                focusedUri: __SkinAssetUri(mode, "header-button-focused.9.png")
+                activeOpacity: 0.0
+                text: &hB3B3B3FF
+                activeUsesFocusedText: false
+            }
+        end if
+        if mode = Mode.LiquidGlass then
+            return {
+                focusedUri: __SkinAssetUri(mode, "header-button-focused.9.png")
+                activeOpacity: 0.58
+                text: &hFFFFFFFF
+                activeUsesFocusedText: true
+            }
+        end if
+        return {
+            focusedUri: ResolutionAssets.GetButtonImageUri("header-button-focused.9.png")
+            activeOpacity: 0.58
+            text: &hFFFFFFFF
+            activeUsesFocusedText: true
+        }
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.SettingsCardUri
+    '---------------------------------------------------------------------------
+    function SettingsCardUri(value as dynamic) as string
+        mode = Normalize(value)
+        if IsSkin(mode) then return __SkinAssetUri(mode, "card.9.png")
+        return "pkg:/images/settings/" + ResolutionProfile.GetName() + "/settings-card-glass.9.png"
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.Button
+    '---------------------------------------------------------------------------
+    ' Primary, sort and browse buttons share this palette.
+    '---------------------------------------------------------------------------
+    function Button(value as dynamic) as object
+        mode = Normalize(value)
+        if IsSkin(mode) then
+            return {
+                unfocusedUri: __SkinAssetUri(mode, "button.9.png")
+                focusedUri: __SkinAssetUri(mode, "button-focused.9.png")
+                text: &hFFFFFFFF
+                focusedText: __SkinFocusedText(mode)
+            }
+        end if
+        return {
+            unfocusedUri: ResolutionAssets.GetButtonImageUri("primary-unfocused.9.png")
+            focusedUri: ResolutionAssets.GetButtonImageUri("primary-focused.9.png")
+            text: &hFFFFFFFF
+            focusedText: &h0F1A2AFF
+        }
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.ToolbarButton
+    '---------------------------------------------------------------------------
+    ' Media toolbar and player toolbar pills.
+    '---------------------------------------------------------------------------
+    function ToolbarButton(value as dynamic) as object
+        mode = Normalize(value)
+        if IsSkin(mode) then
+            return {
+                unfocusedUri: __SkinAssetUri(mode, "pill.9.png")
+                focusedUri: __SkinAssetUri(mode, "pill-focused.9.png")
+                text: &hF3F7FBFF
+                focusedText: __SkinFocusedText(mode)
+            }
+        end if
+        return {
+            unfocusedUri: "pkg:/images/buttons/media-toolbar-button-unfocused.9.png"
+            focusedUri: "pkg:/images/buttons/media-toolbar-button-focused.9.png"
+            text: &hF3F7FBFF
+            focusedText: &h0F1A2AFF
+        }
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.TextInput
+    '---------------------------------------------------------------------------
+    ' Empty uris keep the original rectangle rendering.
+    '---------------------------------------------------------------------------
+    function TextInput(value as dynamic) as object
+        mode = Normalize(value)
+        if IsSkin(mode) then
+            return { panelUri: __SkinAssetUri(mode, "input.9.png"), focusUri: __SkinAssetUri(mode, "input-focus.9.png") }
+        end if
+        return { panelUri: "", focusUri: "" }
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.ProgressBar
+    '---------------------------------------------------------------------------
+    function ProgressBar(value as dynamic) as object
+        mode = Normalize(value)
+        if IsSkin(mode) then
+            return { trackUri: __SkinAssetUri(mode, "progress-track.9.png"), fillUri: __SkinAssetUri(mode, "progress-fill.9.png"), borderUri: "" }
+        end if
+        return { trackUri: "pkg:/images/progress/progress-track.9.png", fillUri: "pkg:/images/progress/progress-fill.9.png", borderUri: "pkg:/images/progress/progress-border.9.png" }
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.FocusFrameUri
+    '---------------------------------------------------------------------------
+    ' Cinema redraws the shared white focus frames with square corners. The
+    ' default uri is returned unchanged for every other theme.
+    '---------------------------------------------------------------------------
+    function FocusFrameUri(value as dynamic, defaultUri as string) as string
+        if Normalize(value) <> Mode.Cinema then return defaultUri
+        filename = __Basename(defaultUri)
+        if filename = "" then return defaultUri
+        if defaultUri.Instr("/fhd/") >= 0 or defaultUri.Instr("/hd/") >= 0 then
+            return "pkg:/images/themes/cinema/focus/" + ResolutionProfile.GetName() + "/" + filename
+        end if
+        return "pkg:/images/themes/cinema/focus/shared/" + filename
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.MaskUri
+    '---------------------------------------------------------------------------
+    ' Cinema re-corners the rectangular artwork masks it generates; circular
+    ' and unknown masks keep the shared file.
+    '---------------------------------------------------------------------------
+    function MaskUri(value as dynamic, defaultUri as string) as string
+        if Normalize(value) <> Mode.Cinema then return defaultUri
+        filename = __Basename(defaultUri)
+        for each name in ["poster-3-col-mask.png", "poster-4-col-mask.png", "poster-5-col-mask.png", "poster-6-col-mask.png", "thumbnail-2-col-mask.png", "thumbnail-3-col-mask.png", "thumbnail-4-col-mask.png", "episode-thumbnail-mask.png", "season-poster-mask.png", "season-poster-large-mask.png", "detailed-card-mask.png", "detailed-poster-mask.png", "movie-poster-mask.png", "filmography-movie-mask.png"]
+            if name = filename then return "pkg:/images/themes/cinema/masks/" + ResolutionProfile.GetName() + "/" + filename
+        end for
+        return defaultUri
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.MediaShell
+    '---------------------------------------------------------------------------
+    ' Skins fade the detail backdrop into their own canvas with a full-screen
+    ' gradient; the original themes keep the shared bottom gradient strip.
+    '---------------------------------------------------------------------------
+    function MediaShell(value as dynamic) as object
+        mode = Normalize(value)
+        if mode = Mode.Cinema then
+            return { backdropOpacity: 0.75, gradientUri: "pkg:/images/themes/cinema/media-shell-gradient.png", fullScreenGradient: true }
+        end if
+        if mode = Mode.LiquidGlass then
+            return { backdropOpacity: 0.5, gradientUri: "pkg:/images/themes/liquid-glass/media-shell-gradient.png", fullScreenGradient: true }
+        end if
+        return { backdropOpacity: 0.5, gradientUri: "pkg:/images/overlays/bottom-content-gradient.png", fullScreenGradient: false }
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.PlaybackControls
+    '---------------------------------------------------------------------------
+    function PlaybackControls(value as dynamic) as object
+        if Normalize(value) = Mode.Cinema then
+            return { trackColor: &h4D4D4DFF, trackOpacity: 1.0, fillColor: &hE50914FF, fillOpacity: 1.0, scrubberColor: &hFFFFFFFF }
+        end if
+        return { trackColor: &hFFFFFFFF, trackOpacity: 0.32, fillColor: &hFFFFFFFF, fillOpacity: 0.92, scrubberColor: &hFFFFFFFF }
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.ShowsBillboard
+    '---------------------------------------------------------------------------
+    function ShowsBillboard(value as dynamic) as boolean
+        return IsSkin(value)
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.Fonts
+    '---------------------------------------------------------------------------
+    ' Bundled typefaces for the skins; invalid keeps Roku's system fonts.
+    '---------------------------------------------------------------------------
+    function Fonts(value as dynamic) as object
+        mode = Normalize(value)
+        if mode = Mode.LiquidGlass then
+            return { regular: "pkg:/fonts/liquid-glass/Inter-Regular.ttf", bold: "pkg:/fonts/liquid-glass/Inter-SemiBold.ttf", scale: 0.9 }
+        end if
+        if mode = Mode.Cinema then
+            return { regular: "pkg:/fonts/cinema/Montserrat-Medium.ttf", bold: "pkg:/fonts/cinema/Montserrat-SemiBold.ttf", scale: 0.88 }
+        end if
+        return invalid
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.__SkinAssetUri
+    '---------------------------------------------------------------------------
+    function __SkinAssetUri(mode as string, filename as string) as string
+        return "pkg:/images/themes/" + mode + "/" + ResolutionProfile.GetName() + "/" + filename
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.__SkinFocusedText
+    '---------------------------------------------------------------------------
+    function __SkinFocusedText(mode as string) as integer
+        if mode = Mode.Cinema then return &h000000FF
+        return &h141A2BFF
+    end function
+
+    '---------------------------------------------------------------------------
+    ' Theme.__Basename
+    '---------------------------------------------------------------------------
+    function __Basename(uri as string) as string
+        parts = uri.Split("/")
+        if parts.Count() = 0 then return ""
+        return parts[parts.Count() - 1]
     end function
 
     '---------------------------------------------------------------------------

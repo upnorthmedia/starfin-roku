@@ -5,6 +5,7 @@ import "pkg:/source/MaskAssets.bs"
 import "pkg:/source/ResolutionProfile.bs"
 import "pkg:/source/ResolutionAssets.bs"
 import "pkg:/source/MediaMetadataFormatting.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -35,6 +36,16 @@ end sub
 '-------------------------------------------------------------------------------
 sub initHandlers()
     m.top.observeField("itemContent", "onItemContentChanged")
+    m.global.observeField("theme", "onThemeChanged")
+    ThemeFont.Apply(m.top, m.global.theme)
+end sub
+
+'-------------------------------------------------------------------------------
+' onThemeChanged
+'-------------------------------------------------------------------------------
+sub onThemeChanged()
+    MaskAssets.Apply(m.posterMask, "season-poster-mask.png", [207, 312], [138, 208])
+    ThemeFont.Apply(m.top, m.global.theme)
 end sub
 
 '-------------------------------------------------------------------------------

@@ -107,6 +107,21 @@ namespace tests
             m.assertEqual(m.top.cardWidth, 100.0)
         end function
 
+
+        @it("uses the Cinema card panel and restores the shared glass for Blue")
+        function _()
+            originalTheme = m.global.theme
+            m.global.theme = "cinema"
+            card = CreateObject("roSGNode", "SettingsCard")
+
+            m.assertEqual(card.findNode("background").uri, "pkg:/images/themes/cinema/fhd/card.9.png")
+
+            m.global.theme = "blue"
+
+            m.assertEqual(card.findNode("background").uri, "pkg:/images/settings/fhd/settings-card-glass.9.png")
+            m.global.theme = originalTheme
+        end function
+
     end class
 
 end namespace

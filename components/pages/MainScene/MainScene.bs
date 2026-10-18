@@ -7,6 +7,7 @@ import "pkg:/source/Url.bs"
 import "pkg:/source/PlaybackProgress.bs"
 import "pkg:/source/Spinner.bs"
 import "pkg:/source/AppMessage.bs"
+import "pkg:/source/ThemeFont.bs"
 import "pkg:/components/pages/MainScene/Helpers/Messages.bs"
 import "pkg:/components/pages/MainScene/Helpers/Confirmation.bs"
 import "pkg:/source/PlaybackReturn.bs"
@@ -52,6 +53,15 @@ sub init()
     initValues()
     initHandlers()
 
+end sub
+
+'-------------------------------------------------------------------------------
+' applyThemeFonts
+'-------------------------------------------------------------------------------
+' Pages, dialogs and item renderers created later apply fonts themselves.
+'-------------------------------------------------------------------------------
+sub applyThemeFonts()
+    ThemeFont.Apply(m.top, m.global.theme)
 end sub
 
 '-------------------------------------------------------------------------------
@@ -146,6 +156,7 @@ end sub
 ' initHandlers
 '-------------------------------------------------------------------------------
 sub initHandlers()
+    m.global.observeField("theme", "applyThemeFonts")
     m.messageOpenTimer.observeField("fire", "onMessageOpenTimer")
     m.confirmationOverlayHost.observeField("closed", "onConfirmationClosed")
     m.messageOverlayHost.observeField("closed", "onMessageClosed")

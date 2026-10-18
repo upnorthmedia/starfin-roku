@@ -1,3 +1,4 @@
+import "pkg:/source/Theme.bs"
 '-------------------------------------------------------------------------------
 ' applyGridLayout
 '-------------------------------------------------------------------------------
@@ -110,7 +111,7 @@ sub applyVideoLibraryGridSpec(layoutSpec as object, verticalOffset = 0 as intege
     m.itemsGrid.itemSpacing = layoutSpec.itemSpacing
     m.itemsGrid.numColumns = layoutSpec.numColumns
     m.itemsGrid.numRows = layoutSpec.numRows
-    m.itemsGrid.focusBitmapUri = layoutSpec.focusBitmapUri
+    m.itemsGrid.focusBitmapUri = Theme.FocusFrameUri(m.global.theme, layoutSpec.focusBitmapUri)
 end sub
 
 '-------------------------------------------------------------------------------

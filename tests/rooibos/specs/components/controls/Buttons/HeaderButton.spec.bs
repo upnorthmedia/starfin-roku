@@ -191,6 +191,41 @@ namespace tests
             m.assertTrue(m.top.buttonSelected)
         end function
 
+
+        @describe("themes")
+
+        @it("shows the active section as white text without a pill in Cinema")
+        function _()
+            originalTheme = m.global.theme
+            m.global.theme = "cinema"
+            m.top.hasActiveVisual = true
+
+            m.assertFalse(m.node.background.visible)
+            m.assertEqual(m.node.textLabel.color, &hFFFFFFFF)
+            m.assertEqual(m.node.background.uri, "pkg:/images/themes/cinema/fhd/header-button-focused.9.png")
+
+            m.top.hasActiveVisual = false
+
+            m.assertEqual(m.node.textLabel.color, &hB3B3B3FF)
+            m.global.theme = originalTheme
+        end function
+
+        @it("restores the translucent active pill when returning to Blue")
+        function _()
+            originalTheme = m.global.theme
+            m.global.theme = "cinema"
+            m.top.hasActiveVisual = true
+
+            m.global.theme = "blue"
+
+            m.assertTrue(m.node.background.visible)
+            m.assertEqual(m.node.background.opacity, 0.58)
+            m.assertEqual(m.node.background.uri, "pkg:/images/buttons/fhd/header-button-focused.9.png")
+            m.assertEqual(m.node.textLabel.color, m.top.headerBgColor)
+            m.top.hasActiveVisual = false
+            m.global.theme = originalTheme
+        end function
+
     end class
 
 end namespace

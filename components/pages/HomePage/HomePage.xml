@@ -31,12 +31,14 @@
   </interface>
   <children>
     <UnwatchedEpisodeCountRefresh id="episodeCountRefresh" />
+    <HomeBillboard id="billboard" visible="false" />
     <Group id="contentGroup" translation="[96,120]">
       <Group id="shelfViewport" translation="[0,20]" clippingRect="[0,0,1824,940]">
         <Group id="shelvesGroup" translation="[0,0]" />
       </Group>
     </Group>
 
+    <Timer id="billboardTimer" duration="0.25" repeat="false" />
     <Animation id="shelvesAnimation" duration="0.18" repeat="false" easeFunction="outQuad">
       <Vector2DFieldInterpolator id="shelvesTranslation" key="[0.0,1.0]" fieldToInterp="shelvesGroup.translation" />
     </Animation>

@@ -148,7 +148,7 @@ namespace tests
             m.assertEqual(m.top.themePreviewRequested, "")
         end function
 
-        @it("places all four themes in the Theme category with Blue selected by default")
+        @it("places all six themes in the Theme category with Blue selected by default")
         function _()
             'bs:disable-next-line 1140
             showCategory(2)
@@ -158,14 +158,17 @@ namespace tests
             options = m.node.settingsControls.themeOptions
 
             m.assertEqual(options.checkedItem, 0)
-            m.assertEqual(options.content.getChildCount(), 4)
+            m.assertEqual(options.content.getChildCount(), 6)
             m.assertEqual(options.content.getChild(0).title, "Blue gradient")
             m.assertEqual(options.content.getChild(1).title, "Black gradient")
             m.assertEqual(options.content.getChild(2).title, "Grey gradient")
             m.assertEqual(options.content.getChild(3).title, "Pure Black")
-            m.assertEqual(options.numRows, 4)
-            m.assertEqual(m.top.findNode("themeCard").cardHeight, 292.0)
-            m.assertEqual(m.top.findNode("watchedIndicatorCard").translation, [0.0, 308.0])
+            m.assertEqual(options.content.getChild(4).title, "Liquid Glass")
+            m.assertEqual(options.content.getChild(5).title, "Cinema")
+            m.assertEqual(options.numRows, 6)
+            m.assertEqual(m.top.findNode("themeCard").cardHeight, 396.0)
+            m.assertEqual(m.top.findNode("watchedIndicatorCard").translation, [0.0, 412.0])
+            m.assertEqual(m.top.findNode("unwatchedEpisodeCountCard").translation, [416.0, 412.0])
             m.assertEqual(m.node.categoryControls[2], [options, m.node.settingsControls.watchedIndicatorOptions, m.node.settingsControls.showUnwatchedEpisodeCountOptions])
             m.assertEqual(options.getParent(), m.top.findNode("themeCard"))
         end function

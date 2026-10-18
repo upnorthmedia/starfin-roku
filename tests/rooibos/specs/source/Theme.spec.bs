@@ -351,6 +351,206 @@ namespace tests
             m.assertEqual(Theme.DialogPanelUri("pure-black"), "pkg:/images/themes/pure-black/hd/dialog-panel.9.png")
         end function
 
+
+        @describe("Liquid Glass and Cinema")
+
+        @it("normalizes the skin registry values case-insensitively")
+        function _()
+            m.assertEqual(Theme.Normalize("LIQUID-GLASS"), "liquid-glass")
+            m.assertEqual(Theme.Normalize("Cinema"), "cinema")
+        end function
+
+        @it("identifies only the two skins")
+        function _()
+            m.assertTrue(Theme.IsSkin("liquid-glass"))
+            m.assertTrue(Theme.IsSkin("cinema"))
+            m.assertFalse(Theme.IsSkin("blue"))
+            m.assertFalse(Theme.IsSkin("pure-black"))
+        end function
+
+        @it("provides the skin backgrounds")
+        function _()
+            m.assertEqual(Theme.BackgroundColor("liquid-glass"), &h0C1018FF)
+            m.assertEqual(Theme.BackgroundColor("cinema"), &h141414FF)
+            m.assertEqual(Theme.BackgroundUri("liquid-glass"), "pkg:/images/themes/liquid-glass/background.png")
+            m.assertEqual(Theme.BackgroundUri("cinema"), "pkg:/images/themes/cinema/background.png")
+        end function
+
+        @it("resolves the skin dialog panels for fhd and hd")
+        function _()
+            m.assertEqual(Theme.DialogPanelUri("liquid-glass"), "pkg:/images/themes/liquid-glass/fhd/dialog-panel.9.png")
+            m.global.resolutionProfile = { resolution: "hd" }
+
+            m.assertEqual(Theme.DialogPanelUri("cinema"), "pkg:/images/themes/cinema/hd/dialog-panel.9.png")
+        end function
+
+        @it("resolves the skin header menus")
+        function _()
+            glass = Theme.HeaderMenu("liquid-glass")
+            cinema = Theme.HeaderMenu("cinema")
+
+            m.assertEqual(glass.fillUri, "pkg:/images/themes/liquid-glass/fhd/header-menu-fill.9.png")
+            m.assertEqual(glass.glassUri, "pkg:/images/themes/liquid-glass/fhd/header-menu-glass.9.png")
+            m.assertEqual(glass.focusedText, &h141A2BFF)
+            m.assertEqual(glass.divider, &hFFFFFF33)
+            m.assertEqual(cinema.fillUri, "pkg:/images/themes/cinema/fhd/header-menu-fill.9.png")
+            m.assertEqual(cinema.focusedText, &h000000FF)
+        end function
+
+        @it("resolves the skin square buttons")
+        function _()
+            glass = Theme.SquareButton("liquid-glass")
+            cinema = Theme.SquareButton("cinema")
+
+            m.assertEqual(glass.backgroundUri, "pkg:/images/themes/liquid-glass/square-button-background.png")
+            m.assertEqual(glass.wideFill, &h3A4152FF)
+            m.assertEqual(glass.focusedText, &h141A2BFF)
+            m.assertEqual(cinema.backgroundUri, "pkg:/images/themes/cinema/square-button-background.png")
+            m.assertEqual(cinema.wideFill, &h2A2A2AFF)
+            m.assertEqual(cinema.focusedText, &h000000FF)
+        end function
+
+        @it("resolves the skin detailed card panels and account badges")
+        function _()
+            m.assertEqual(Theme.DetailedCardBackgroundUri("liquid-glass"), "pkg:/images/themes/liquid-glass/detailed-card-panel.png")
+            m.assertEqual(Theme.DetailedCardBackgroundUri("cinema"), "pkg:/images/themes/cinema/detailed-card-panel.png")
+            m.assertEqual(Theme.AccountBadge("liquid-glass"), { background: &h0C1018FF, ring: &h1C2436FF, glass: &hE8ECF4FF })
+            m.assertEqual(Theme.AccountBadge("cinema"), { background: &h141414FF, ring: &h232323FF, glass: &hE5E5E5FF })
+        end function
+
+        @it("keeps Blue's navigation glass for the original themes")
+        function _()
+            for each mode in ["blue", "black", "grey", "pure-black", "unknown"]
+                m.assertEqual(Theme.NavGlassUri(mode), "pkg:/images/themes/blue/fhd/header-menu-glass.9.png")
+            end for
+        end function
+
+        @it("gives Liquid Glass its own navigation glass and hides it for Cinema")
+        function _()
+            m.assertEqual(Theme.NavGlassUri("liquid-glass"), "pkg:/images/themes/liquid-glass/fhd/nav-glass.9.png")
+            m.assertEqual(Theme.NavGlassUri("cinema"), "")
+        end function
+
+        @it("keeps the shared header button art for the original themes")
+        function _()
+            palette = Theme.HeaderButton("grey")
+
+            m.assertEqual(palette.focusedUri, "pkg:/images/buttons/fhd/header-button-focused.9.png")
+            m.assertEqual(palette.activeOpacity, 0.58)
+            m.assertEqual(palette.text, &hFFFFFFFF)
+            m.assertTrue(palette.activeUsesFocusedText)
+        end function
+
+        @it("styles Cinema header buttons as plain text")
+        function _()
+            palette = Theme.HeaderButton("cinema")
+
+            m.assertEqual(palette.focusedUri, "pkg:/images/themes/cinema/fhd/header-button-focused.9.png")
+            m.assertEqual(palette.activeOpacity, 0.0)
+            m.assertEqual(palette.text, &hB3B3B3FF)
+            m.assertFalse(palette.activeUsesFocusedText)
+        end function
+
+        @it("keeps the shared settings card and primary button art for the original themes")
+        function _()
+            button = Theme.Button("black")
+
+            m.assertEqual(Theme.SettingsCardUri("black"), "pkg:/images/settings/fhd/settings-card-glass.9.png")
+            m.assertEqual(button.unfocusedUri, "pkg:/images/buttons/fhd/primary-unfocused.9.png")
+            m.assertEqual(button.focusedUri, "pkg:/images/buttons/fhd/primary-focused.9.png")
+            m.assertEqual(button.focusedText, &h0F1A2AFF)
+            m.assertEqual(button.text, &hFFFFFFFF)
+        end function
+
+        @it("resolves the skin settings cards and primary buttons")
+        function _()
+            glass = Theme.Button("liquid-glass")
+            cinema = Theme.Button("cinema")
+
+            m.assertEqual(Theme.SettingsCardUri("cinema"), "pkg:/images/themes/cinema/fhd/card.9.png")
+            m.assertEqual(glass.unfocusedUri, "pkg:/images/themes/liquid-glass/fhd/button.9.png")
+            m.assertEqual(glass.focusedUri, "pkg:/images/themes/liquid-glass/fhd/button-focused.9.png")
+            m.assertEqual(glass.focusedText, &h141A2BFF)
+            m.assertEqual(cinema.focusedText, &h000000FF)
+        end function
+
+        @it("keeps the shared toolbar pills for the original themes and swaps them for skins")
+        function _()
+            m.assertEqual(Theme.ToolbarButton("blue").unfocusedUri, "pkg:/images/buttons/media-toolbar-button-unfocused.9.png")
+            m.assertEqual(Theme.ToolbarButton("blue").focusedUri, "pkg:/images/buttons/media-toolbar-button-focused.9.png")
+            m.assertEqual(Theme.ToolbarButton("liquid-glass").unfocusedUri, "pkg:/images/themes/liquid-glass/fhd/pill.9.png")
+            m.assertEqual(Theme.ToolbarButton("cinema").focusedUri, "pkg:/images/themes/cinema/fhd/pill-focused.9.png")
+        end function
+
+        @it("renders original text inputs as rectangles and skins as panels")
+        function _()
+            m.assertEqual(Theme.TextInput("blue"), { panelUri: "", focusUri: "" })
+            m.assertEqual(Theme.TextInput("cinema"), { panelUri: "pkg:/images/themes/cinema/fhd/input.9.png", focusUri: "pkg:/images/themes/cinema/fhd/input-focus.9.png" })
+        end function
+
+        @it("keeps the shared progress art for the original themes and swaps it for skins")
+        function _()
+            original = Theme.ProgressBar("pure-black")
+            cinema = Theme.ProgressBar("cinema")
+
+            m.assertEqual(original.trackUri, "pkg:/images/progress/progress-track.9.png")
+            m.assertEqual(original.fillUri, "pkg:/images/progress/progress-fill.9.png")
+            m.assertEqual(original.borderUri, "pkg:/images/progress/progress-border.9.png")
+            m.assertEqual(cinema.fillUri, "pkg:/images/themes/cinema/fhd/progress-fill.9.png")
+            m.assertEqual(cinema.borderUri, "")
+        end function
+
+        @it("returns the default focus frame for every theme but Cinema")
+        function _()
+            uri = "pkg:/images/homepage/fhd/home-page-thumbnail-focus.png"
+
+            m.assertEqual(Theme.FocusFrameUri("blue", uri), uri)
+            m.assertEqual(Theme.FocusFrameUri("liquid-glass", uri), uri)
+        end function
+
+        @it("re-corners focus frames for Cinema")
+        function _()
+            m.assertEqual(Theme.FocusFrameUri("cinema", "pkg:/images/homepage/fhd/home-page-thumbnail-focus.png"), "pkg:/images/themes/cinema/focus/fhd/home-page-thumbnail-focus.png")
+            m.assertEqual(Theme.FocusFrameUri("cinema", "pkg:/images/tv-show/season-poster-focus-207x381.png"), "pkg:/images/themes/cinema/focus/shared/season-poster-focus-207x381.png")
+        end function
+
+        @it("re-corners only the known masks for Cinema")
+        function _()
+            posterMask = "pkg:/images/masks/fhd/poster-6-col-mask.png"
+
+            m.assertEqual(Theme.MaskUri("liquid-glass", posterMask), posterMask)
+            m.assertEqual(Theme.MaskUri("cinema", posterMask), "pkg:/images/themes/cinema/masks/fhd/poster-6-col-mask.png")
+            m.assertEqual(Theme.MaskUri("cinema", "pkg:/images/masks/fhd/cast-mask.png"), "pkg:/images/masks/fhd/cast-mask.png")
+        end function
+
+        @it("keeps the shared media shell gradient for the original themes and fades skins full screen")
+        function _()
+            original = Theme.MediaShell("black")
+            cinema = Theme.MediaShell("cinema")
+
+            m.assertEqual(original, { backdropOpacity: 0.5, gradientUri: "pkg:/images/overlays/bottom-content-gradient.png", fullScreenGradient: false })
+            m.assertEqual(cinema, { backdropOpacity: 0.75, gradientUri: "pkg:/images/themes/cinema/media-shell-gradient.png", fullScreenGradient: true })
+            m.assertEqual(Theme.MediaShell("liquid-glass").backdropOpacity, 0.5)
+        end function
+
+        @it("colors playback progress red only for Cinema")
+        function _()
+            m.assertEqual(Theme.PlaybackControls("liquid-glass").fillColor, &hFFFFFFFF)
+            m.assertEqual(Theme.PlaybackControls("liquid-glass").trackOpacity, 0.32)
+            m.assertEqual(Theme.PlaybackControls("cinema").fillColor, &hE50914FF)
+            m.assertEqual(Theme.PlaybackControls("cinema").trackColor, &h4D4D4DFF)
+        end function
+
+        @it("shows the billboard and bundles typefaces only for skins")
+        function _()
+            m.assertFalse(Theme.ShowsBillboard("blue"))
+            m.assertTrue(Theme.ShowsBillboard("liquid-glass"))
+            m.assertTrue(Theme.ShowsBillboard("cinema"))
+            m.assertInvalid(Theme.Fonts("blue"))
+            m.assertEqual(Theme.Fonts("liquid-glass"), { regular: "pkg:/fonts/liquid-glass/Inter-Regular.ttf", bold: "pkg:/fonts/liquid-glass/Inter-SemiBold.ttf", scale: 0.9 })
+            m.assertEqual(Theme.Fonts("cinema"), { regular: "pkg:/fonts/cinema/Montserrat-Medium.ttf", bold: "pkg:/fonts/cinema/Montserrat-SemiBold.ttf", scale: 0.88 })
+        end function
+
     end class
 
 end namespace

@@ -257,6 +257,38 @@ namespace tests
             m.assertTrue(Instr(1, m.top.findNode("bg").uri, "playback-action-focused.9.png") > 0)
         end function
 
+
+        @describe("themes")
+
+        @it("uses the Liquid Glass button art for the default backgrounds")
+        function _()
+            originalTheme = m.global.theme
+            m.global.theme = "liquid-glass"
+            m.top.hasFocusVisual = false
+
+            m.assertEqual(m.node.background.uri, "pkg:/images/themes/liquid-glass/fhd/button.9.png")
+            m.assertEqual(m.node.textLabel.color, &hFFFFFFFF)
+
+            m.top.hasFocusVisual = true
+
+            m.assertEqual(m.node.background.uri, "pkg:/images/themes/liquid-glass/fhd/button-focused.9.png")
+            m.assertEqual(m.node.textLabel.color, &h141A2BFF)
+            m.top.hasFocusVisual = false
+            m.global.theme = originalTheme
+        end function
+
+        @it("keeps consumer-supplied button art in every theme")
+        function _()
+            originalTheme = m.global.theme
+            button = CreateObject("roSGNode", "PrimaryButton")
+            button.focusedBackground = "playback-action-focused.9.png"
+            button.unfocusedBackground = "playback-action-unfocused.9.png"
+            m.global.theme = "cinema"
+
+            m.assertEqual(button.findNode("bg").uri, "pkg:/images/buttons/fhd/playback-action-unfocused.9.png")
+            m.global.theme = originalTheme
+        end function
+
     end class
 
 end namespace

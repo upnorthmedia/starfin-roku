@@ -1,6 +1,7 @@
 import "pkg:/source/Remote.bs"
 import "pkg:/source/Char.bs"
 import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 import "pkg:/source/Number.bs"
 import "pkg:/source/TimerControl.bs"
 
@@ -118,6 +119,7 @@ function addSectionHeader(title as string, y as integer) as integer
     heading.text = UCase(title)
     heading.color = accentColor
     heading.font = "font:SmallerBoldSystemFont"
+    ThemeFont.Apply(heading, m.global.theme)
     m.propertySheet.appendChild(heading)
 
     rule = CreateObject("roSGNode", "Rectangle")
@@ -150,6 +152,7 @@ function addPropertyRow(keyText as string, valueText as string, y as integer, wr
     keyLabel.wrap = keyLineCount > 1
     keyLabel.numLines = keyLineCount
     if keyLineCount > 1 then keyLabel.lineSpacing = 0
+    ThemeFont.Apply(keyLabel, m.global.theme)
     m.propertySheet.appendChild(keyLabel)
 
     valueLabel = CreateObject("roSGNode", "Label")
@@ -163,6 +166,7 @@ function addPropertyRow(keyText as string, valueText as string, y as integer, wr
     valueLabel.wrap = valueLineCount > 1
     valueLabel.numLines = valueLineCount
     if valueLineCount > 1 then valueLabel.lineSpacing = 0
+    ThemeFont.Apply(valueLabel, m.global.theme)
     if wrapValue then
         valueLabel.wrap = true
         valueLabel.numLines = 0
