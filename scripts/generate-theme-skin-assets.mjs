@@ -122,18 +122,21 @@ async function renderRoundedTile(width, height, spec) {
 }
 
 // Repeating sub-level dither softens 8-bit banding, matching generate-theme-backgrounds.mjs.
+// Rendered at half resolution: the ThemeBackground Poster stretches it, and the texture
+// costs a quarter of a full 1080p bitmap on the device.
 async function renderBackground(skin) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect width="1920" height="1080" fill="${skin.base}"/>${skin.background}</svg>`;
+  const width = 960, height = 540;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 1920 1080"><rect width="1920" height="1080" fill="${skin.base}"/>${skin.background}</svg>`;
   const raw = await sharp(Buffer.from(svg)).removeAlpha().raw().toBuffer();
   const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  for (let y = 0; y < 1080; y++) {
-    for (let x = 0; x < 1920; x++) {
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
       const dither = (bayer[(y % 4) * 4 + x % 4] + 0.5) / 16 - 0.5;
-      const offset = (y * 1920 + x) * 3;
+      const offset = (y * width + x) * 3;
       for (let c = 0; c < 3; c++) raw[offset + c] = Math.max(0, Math.min(255, Math.round(raw[offset + c] + dither)));
     }
   }
-  return sharp(raw, { raw: { width: 1920, height: 1080, channels: 3 } }).png({ compressionLevel: 9, adaptiveFiltering: true }).toBuffer();
+  return sharp(raw, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 9, adaptiveFiltering: true }).toBuffer();
 }
 
 // Media shell overlay: fades artwork into the theme canvas from the left and the bottom.

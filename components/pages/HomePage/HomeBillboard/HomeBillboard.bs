@@ -210,16 +210,16 @@ end sub
 function getBackdropUrl(item as object) as string
     server = Strings.ToString(m.top.server)
     if server = "" then return ""
-    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Backdrop, 960, 540)
+    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Backdrop, 800, 450)
     if imageUrl <> "" then return imageUrl
     parentId = Strings.ToString(item.ParentBackdropItemId)
     parentTags = item.ParentBackdropImageTags
     if parentId <> "" and Type(parentTags) = "roArray" and parentTags.Count() > 0 then
-        return Url.BuildImageUrl(server, parentId, JellyfinImage.Type.Backdrop, Strings.ToString(parentTags[0]), 960, 540, invalid)
+        return Url.BuildImageUrl(server, parentId, JellyfinImage.Type.Backdrop, Strings.ToString(parentTags[0]), 800, 450, invalid)
     end if
-    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Thumb, 960, 540)
+    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Thumb, 800, 450)
     if imageUrl <> "" then return imageUrl
-    return ItemImage.GetUrl(server, item, JellyfinImage.Type.Primary, 960, 540)
+    return ItemImage.GetUrl(server, item, JellyfinImage.Type.Primary, 800, 450)
 end function
 
 '-------------------------------------------------------------------------------

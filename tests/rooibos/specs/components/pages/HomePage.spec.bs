@@ -1546,7 +1546,7 @@ namespace tests
             m.assertEqual(featured[2].Id, "m-2")
         end function
 
-        @it("caps the featured billboard at six titles")
+        @it("caps the featured billboard at four titles")
         function _()
             m.node.homeState.rowOrder = ["latest:movies"]
             m.node.homeState.latestLibraries = { movies: { id: "movies", name: "Movies", collectionType: "movies" } }
@@ -1560,7 +1560,7 @@ namespace tests
             'bs:disable-next-line 1140
             renderRows(false)
 
-            m.assertEqual(m.top.findNode("billboard").featuredItems.Count(), 6)
+            m.assertEqual(m.top.findNode("billboard").featuredItems.Count(), 4)
         end function
 
     end class

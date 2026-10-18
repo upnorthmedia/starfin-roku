@@ -900,7 +900,8 @@ end function
 ' buildFeaturedItems
 '-------------------------------------------------------------------------------
 ' Recently added movies and series, interleaved, for the skin billboard to
-' rotate through while no title below is focused.
+' rotate through while no title below is focused. Four keeps the cached
+' backdrops inside this device class's texture budget.
 '-------------------------------------------------------------------------------
 function buildFeaturedItems() as object
     movies = []
@@ -922,9 +923,9 @@ function buildFeaturedItems() as object
     end for
     featured = []
     index = 0
-    while featured.Count() < 6 and (index < movies.Count() or index < series.Count())
+    while featured.Count() < 4 and (index < movies.Count() or index < series.Count())
         if index < movies.Count() then featured.Push(movies[index])
-        if index < series.Count() and featured.Count() < 6 then featured.Push(series[index])
+        if index < series.Count() and featured.Count() < 4 then featured.Push(series[index])
         index = index + 1
     end while
     return featured

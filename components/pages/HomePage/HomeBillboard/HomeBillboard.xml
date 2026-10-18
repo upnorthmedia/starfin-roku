@@ -7,7 +7,7 @@
     <field id="featuredItems" type="array" />
   </interface>
   <children>
-    <Poster id="backdrop" width="1920" height="760" loadWidth="960" loadHeight="540" loadDisplayMode="scaleToZoom" />
+    <Poster id="backdrop" width="1920" height="760" loadWidth="800" loadHeight="450" loadDisplayMode="scaleToZoom" />
     <Poster id="fade" width="1920" height="760" loadWidth="480" loadHeight="190" loadDisplayMode="scaleToFill" />
     <Poster id="logo" translation="[96,140]" width="560" height="190" loadDisplayMode="scaleToFit" visible="false" />
     <Label id="titleLabel" translation="[96,150]" width="900" height="170" wrap="true" maxLines="2" vertAlign="bottom" color="0xFFFFFFFF" font="font:ExtraLargeBoldSystemFont" visible="false" />

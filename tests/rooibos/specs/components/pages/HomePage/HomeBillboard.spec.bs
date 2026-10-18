@@ -17,6 +17,7 @@ namespace tests
             m.top.item = { Id: "movie-1", Type: "Movie", Name: "Example Movie", ProductionYear: 2024, OfficialRating: "PG", Genres: ["Drama"], Overview: "A story.", BackdropImageTags: ["bd"], ImageTags: {} }
 
             m.assertTrue(Instr(1, m.node.billboard.backdrop.uri, "/movie-1/Images/Backdrop") > 0)
+            m.assertTrue(Instr(1, m.node.billboard.backdrop.uri, "maxWidth=800") > 0)
             m.assertTrue(m.node.billboard.backdrop.visible)
             m.assertEqual(m.node.billboard.title.text, "Example Movie")
             m.assertTrue(m.node.billboard.title.visible)
