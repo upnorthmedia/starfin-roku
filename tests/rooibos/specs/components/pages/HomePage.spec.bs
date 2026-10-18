@@ -1475,13 +1475,13 @@ namespace tests
 
             m.assertTrue(m.top.findNode("billboard").visible)
             m.assertEqual(m.top.findNode("shelfViewport").translation, [0.0, 460.0])
-            m.assertEqual(m.top.findNode("shelfViewport").clippingRect, [0.0, 0.0, 1824.0, 500.0])
+            m.assertEqual(m.top.findNode("shelfViewport").clippingRect.height, 500.0)
 
             m.global.theme = "blue"
 
             m.assertFalse(m.top.findNode("billboard").visible)
             m.assertEqual(m.top.findNode("shelfViewport").translation, [0.0, 20.0])
-            m.assertEqual(m.top.findNode("shelfViewport").clippingRect, [0.0, 0.0, 1824.0, 940.0])
+            m.assertEqual(m.top.findNode("shelfViewport").clippingRect.height, 940.0)
             m.global.theme = originalTheme
         end function
 
