@@ -450,6 +450,18 @@ namespace tests
 
         @describe("category and panel setup")
 
+        @it("opens the Advanced panel from the device list on a fresh instance")
+        function _()
+            node = CreateObject("roSGNode", "SettingsContent")
+
+            node.findNode("deviceCategoryList").itemSelected = 2
+
+            panel = node.findNode("advancedPanel")
+            m.assertNotInvalid(panel)
+            m.assertTrue(panel.visible)
+            m.assertEqual(node.categoryTitle, "Advanced")
+        end function
+
         @it("initializes every settings category and matching panel")
         function _()
             deviceTitles = ["General", "Video", "Advanced"]

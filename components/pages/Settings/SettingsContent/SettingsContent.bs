@@ -67,8 +67,6 @@ end sub
 sub initReferences()
     m.deviceCategoryList = m.top.findNode("deviceCategoryList")
     m.userCategoryList = m.top.findNode("userCategoryList")
-    m.categoryPanels = [invalid, invalid, invalid, invalid, invalid, invalid, invalid, invalid, invalid, invalid]
-    m.categoryControls = [[], [], [], [], [], [], [], [], [], []]
     m.settingsControls = {}
     m.resetStarfinState = { confirmationVisible: false }
     m.accountUi = { state: invalid }
@@ -78,6 +76,12 @@ sub initReferences()
         panelIds: ["libraryPanel", "mediaShellPanel", "themePanel", "playbackPanel", "accountSubtitlesPanel", "tvPanel", "screensaverPanel", "homePanel", "systemPanel", "videoPanel", "advancedPanel"]
         deviceTitles: ["General", "Video", "Advanced"]
     }
+    m.categoryPanels = []
+    m.categoryControls = []
+    for index = 0 to m.categoryState.panelComponents.Count() - 1
+        m.categoryPanels.Push(invalid)
+        m.categoryControls.Push([])
+    end for
     m.categoryState.userCount = m.categoryState.userTitles.Count()
     m.categoryState.deviceCount = m.categoryState.deviceTitles.Count()
     m.categoryState.deviceOffset = m.categoryState.userCount
