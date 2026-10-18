@@ -1578,13 +1578,13 @@ namespace tests
             shelf = m.node.homeState.shelfNodes[0]
             billboard = m.top.findNode("billboard")
 
-            shelf.findNode("items").jumpToRowItem = [0, 0]
+            shelf.callFunc("activate", "cw-1")
             'bs:disable-next-line 1140
             updateBillboard()
 
             m.assertEqual(billboard.item, {})
 
-            shelf.findNode("items").jumpToRowItem = [0, 1]
+            shelf.callFunc("activate", "cw-2")
             'bs:disable-next-line 1140
             updateBillboard()
 

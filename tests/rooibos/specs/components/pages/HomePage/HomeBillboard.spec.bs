@@ -55,11 +55,13 @@ namespace tests
             m.top.featuredItems = [{ Id: "f-1", Type: "Movie", Name: "First", BackdropImageTags: ["a"] }, { Id: "f-2", Type: "Series", Name: "Second", BackdropImageTags: ["b"] }]
             m.top.item = {}
 
-            m.node.featured.timer.fire = true
+            'bs:disable-next-line 1140
+            onRotateTimerFired()
 
             m.assertEqual(m.node.billboard.title.text, "Second")
 
-            m.node.featured.timer.fire = true
+            'bs:disable-next-line 1140
+            onRotateTimerFired()
 
             m.assertEqual(m.node.billboard.title.text, "First")
         end function
@@ -92,7 +94,8 @@ namespace tests
         function _()
             m.top.featuredItems = [{ Id: "f-1", Type: "Movie", Name: "First", BackdropImageTags: ["a"] }, { Id: "f-2", Type: "Series", Name: "Second", BackdropImageTags: ["b"] }]
             m.top.item = {}
-            m.node.featured.timer.fire = true
+            'bs:disable-next-line 1140
+            onRotateTimerFired()
 
             m.top.featuredItems = [{ Id: "f-3", Type: "Movie", Name: "Third", BackdropImageTags: ["c"] }]
 

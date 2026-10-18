@@ -310,7 +310,7 @@ namespace tests
         function _()
             defaults = SettingsStore.Defaults()
 
-            m.assertEqual(defaults.Count(), 29)
+            m.assertEqual(defaults.Count(), 30)
             m.assertEqual(defaults[SettingsStore.Key.TvLibraryLayout], "poster;6")
             m.assertEqual(defaults[SettingsStore.Key.MovieLibraryLayout], "poster;6")
             m.assertEqual(defaults[SettingsStore.Key.CollectionCardsLayout], "poster;6")
@@ -322,6 +322,7 @@ namespace tests
             m.assertEqual(defaults[SettingsStore.Key.TvEpisodeListDisplay], "vertical")
             m.assertEqual(defaults[SettingsStore.Key.ShowSeasonSummaryCard], "on")
             m.assertEqual(defaults[SettingsStore.Key.HomeEpisodeImages], "series")
+            m.assertEqual(defaults[SettingsStore.Key.ShowMyMediaRow], "on")
             m.assertEqual(defaults[SettingsStore.Key.MovieShellLayout], "full-screen")
             m.assertEqual(defaults[SettingsStore.Key.TvSeriesShellLayout], "partial-screen")
             m.assertEqual(defaults[SettingsStore.Key.TvEpisodeShellLayout], "full-screen")
@@ -356,6 +357,7 @@ namespace tests
                 SettingsStore.Key.TvEpisodeListDisplay
                 SettingsStore.Key.ShowSeasonSummaryCard
                 SettingsStore.Key.HomeEpisodeImages
+                SettingsStore.Key.ShowMyMediaRow
                 SettingsStore.Key.MovieShellLayout
                 SettingsStore.Key.TvSeriesShellLayout
                 SettingsStore.Key.TvEpisodeShellLayout

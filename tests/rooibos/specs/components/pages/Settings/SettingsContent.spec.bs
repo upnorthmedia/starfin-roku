@@ -852,7 +852,7 @@ namespace tests
             m.top.callFunc("loadSettingsValues")
 
             m.assertEqual(m.node.settingsControls.nextEpisodePromptButton.text, "Off")
-            m.assertEqual(m.node.userCategoryList.numRows, 7)
+            m.assertEqual(m.node.userCategoryList.numRows, 8)
         end function
 
         @it("requests the picker with the pending value")
