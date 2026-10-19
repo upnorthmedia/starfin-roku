@@ -13,6 +13,7 @@ individual Starfin features.
 - [Activity Logging](activity-logging.md)
 - [Sending Logs to Jellyfin](log-upload.md)
 - [Audio Playback](audio-playback.md)
+- [Branding](branding.md)
 - [Automated Device Testing](automated-device-testing.md)
 - [Character Constants](character-constants.md)
 - [String Helpers](string-helpers.md)

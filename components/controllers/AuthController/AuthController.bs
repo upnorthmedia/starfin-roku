@@ -321,7 +321,7 @@ sub onResetStarfinRequested()
     m.authState.isResumingSession = false
     m.authState.pendingSwitch = invalid
     m.top.savedSession = m.savedSession
-    publishLoginRequired("Starfin was reset. Sign in to continue.", false)
+    publishLoginRequired("Poppins was reset. Sign in to continue.", false)
 end sub
 
 '-------------------------------------------------------------------------------

@@ -774,7 +774,7 @@ namespace tests
             m.assertEqual(m.node.categoryControls[resetIndex].Count(), 1)
 
             ' The Abort selection event can continue bubbling after focus returns
-            ' to the non-list Reset Starfin button.
+            ' to the non-list Reset Poppins button.
             'bs:disable-next-line 1140
             m.assertFalse(onKeyEvent("OK", true))
         end function

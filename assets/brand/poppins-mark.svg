@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="118 80 276 350" width="276" height="350">
+  <!-- Poppins mark: a lean husky head with both ear tips folded outward. -->
+  <defs>
+    <linearGradient id="coat" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#55647D"/>
+      <stop offset="1" stop-color="#2E384C"/>
+    </linearGradient>
+  </defs>
+
+  <g id="ears">
+    <path d="M164 214 L156 110 L212 92 L246 170 Z" fill="url(#coat)"/>
+    <path d="M180 192 L174 122 L204 112 L230 170 Z" fill="#C7D1DE"/>
+    <path d="M156 110 L212 92 Q 172 126 140 166 Q 130 146 156 110 Z" fill="#6E7D97"/>
+    <path d="M156 110 L212 92" stroke="#8C9BB4" stroke-width="4" stroke-linecap="round"/>
+    <path d="M348 214 L356 110 L300 92 L266 170 Z" fill="url(#coat)"/>
+    <path d="M332 192 L338 122 L308 112 L282 170 Z" fill="#C7D1DE"/>
+    <path d="M356 110 L300 92 Q 340 126 372 166 Q 382 146 356 110 Z" fill="#6E7D97"/>
+    <path d="M356 110 L300 92" stroke="#8C9BB4" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <path id="head" fill="#EEF2F7" d="M256 150
+           C 310 150 344 180 348 226
+           C 350 248 356 262 368 282
+           L 348 286 L 360 306
+           C 336 314 314 332 302 358
+           C 294 378 290 398 282 410
+           C 272 424 240 424 230 410
+           C 222 398 218 378 210 358
+           C 198 332 176 314 152 306
+           L 164 286 L 144 282
+           C 156 262 162 248 164 226
+           C 168 180 202 150 256 150 Z"/>
+
+  <path id="cap" fill="url(#coat)" d="M256 150
+           C 310 150 344 180 348 226
+           C 349 236 350 244 352 252
+           C 338 240 318 234 298 236
+           C 280 240 266 254 256 284
+           C 246 254 232 240 214 236
+           C 194 234 174 240 160 252
+           C 162 244 163 236 164 226
+           C 168 180 202 150 256 150 Z"/>
+
+  <g id="brows" fill="none" stroke="#7A89A2" stroke-width="5" stroke-linecap="round">
+    <path d="M198 230 Q 214 218 234 224"/>
+    <path d="M314 230 Q 298 218 278 224"/>
+  </g>
+
+  <g id="eyes">
+    <path d="M190 266 C 204 248 230 248 242 264 C 228 278 204 278 190 266 Z" fill="#8FD8FF"/>
+    <path d="M322 266 C 308 248 282 248 270 264 C 284 278 308 278 322 266 Z" fill="#8FD8FF"/>
+    <circle cx="218" cy="264" r="7" fill="#0A111F"/>
+    <circle cx="294" cy="264" r="7" fill="#0A111F"/>
+    <circle cx="221" cy="261" r="2.5" fill="#FFFFFF"/>
+    <circle cx="297" cy="261" r="2.5" fill="#FFFFFF"/>
+  </g>
+
+  <path id="nose" fill="#141B28" d="M234 384 C 242 374 270 374 278 384 C 276 400 264 406 256 406 C 248 406 236 400 234 384 Z"/>
+  <ellipse cx="256" cy="381" rx="9" ry="3" fill="#3A4558"/>
+</svg>
