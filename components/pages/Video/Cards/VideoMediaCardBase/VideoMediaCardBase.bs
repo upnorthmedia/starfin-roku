@@ -13,7 +13,7 @@ import "pkg:/source/ThemeFont.bs"
 sub init()
     initBase()
     initHandlers()
-    m.global.observeField("theme", "onThemeChanged")
+    m.global.observeFieldScoped("theme", "onThemeChanged")
     ThemeFont.Apply(m.top, m.global.theme)
     onItemContentChanged()
 end sub

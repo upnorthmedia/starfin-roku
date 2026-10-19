@@ -82,7 +82,8 @@ sub initHandlers()
     m.top.observeField("loadRequest", "onLoadRequestChanged")
     m.episodeCountRefresh.observeField("response", "onEpisodeCountsRefreshed")
     m.billboardTimer.observeField("fire", "updateBillboard")
-    m.global.observeField("theme", "applyThemeLayout")
+    m.top.observeField("visible", "applyThemeLayout")
+    m.global.observeFieldScoped("theme", "applyThemeLayout")
     applyThemeLayout()
 end sub
 
@@ -90,11 +91,12 @@ end sub
 ' applyThemeLayout
 '-------------------------------------------------------------------------------
 ' Skins show a billboard of the focused item above a shorter shelf viewport;
-' the original themes keep the full-height shelves.
+' the original themes keep the full-height shelves. The billboard is hidden
+' with the page so its featured rotation pauses while another page is shown.
 '-------------------------------------------------------------------------------
 sub applyThemeLayout()
     showBillboard = Theme.ShowsBillboard(m.global.theme)
-    m.billboard.visible = showBillboard
+    m.billboard.visible = showBillboard and m.top.visible = true
     if showBillboard then
         m.shelfViewport.translation = [0, 460]
         m.shelfViewport.clippingRect = [0, 0, 1824, 500]

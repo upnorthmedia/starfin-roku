@@ -156,7 +156,7 @@ end sub
 ' initHandlers
 '-------------------------------------------------------------------------------
 sub initHandlers()
-    m.global.observeField("theme", "applyThemeFonts")
+    m.global.observeFieldScoped("theme", "applyThemeFonts")
     m.messageOpenTimer.observeField("fire", "onMessageOpenTimer")
     m.confirmationOverlayHost.observeField("closed", "onConfirmationClosed")
     m.messageOverlayHost.observeField("closed", "onMessageClosed")

@@ -4,6 +4,14 @@ namespace tests
     @suite("TextInput component")
     class TextInputTests extends rooibos.BaseTestSuite
 
+        protected override function beforeEach()
+            m.originalTheme = m.global.theme
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
+        end function
+
         @describe("TextInput behavior")
 
         @it("applies the primary background theme")
@@ -52,7 +60,6 @@ namespace tests
 
         @it("hides the focus frame for unfocused visuals")
         function _()
-            m.top.hasFocusVisual = false
             'bs:disable-next-line 1140
             onFocusVisualChanged()
             m.assertFalse(m.node.focusFrame.visible)
@@ -63,7 +70,6 @@ namespace tests
 
         @it("draws Cinema fields as panels and restores the rectangles for Blue")
         function _()
-            originalTheme = m.global.theme
             m.global.theme = "cinema"
             m.top.hasFocusVisual = true
 
@@ -79,8 +85,6 @@ namespace tests
             m.assertFalse(m.node.skinPanels.focus.visible)
             m.assertTrue(m.node.bg.visible)
             m.assertTrue(m.node.focusFrame.visible)
-            m.top.hasFocusVisual = false
-            m.global.theme = originalTheme
         end function
 
     end class

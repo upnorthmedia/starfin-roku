@@ -236,11 +236,15 @@ for (const [name, skin] of Object.entries(skins)) {
       for (const [dir, files] of focusFrameSources) {
         for (const file of files) {
           const source = `${dir}/${profile}/${file}`;
-          await writeFile(`${root}/focus/${profile}/${file}`, await renderFrame(source, skin.focusFrames, scale)).catch(() => {});
+          await renderFrame(source, skin.focusFrames, scale)
+            .then(png => writeFile(`${root}/focus/${profile}/${file}`, png))
+            .catch(error => console.warn(`${name}: skipped ${source}: ${error.message}`));
         }
       }
       const hdFirst = `images/homepage/${profile}/home-page-my-media-first-focus.png`;
-      await renderFrame(hdFirst, skin.focusFrames, scale).then(png => writeFile(`${root}/focus/${profile}/home-page-my-media-first-focus.png`, png)).catch(() => {});
+      await renderFrame(hdFirst, skin.focusFrames, scale)
+        .then(png => writeFile(`${root}/focus/${profile}/home-page-my-media-first-focus.png`, png))
+        .catch(error => console.warn(`${name}: skipped ${hdFirst}: ${error.message}`));
     }
     if (skin.masks) {
       await mkdir(`${root}/masks/${profile}`, { recursive: true });

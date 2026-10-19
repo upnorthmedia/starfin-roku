@@ -1,3 +1,5 @@
+import "pkg:/source/MaskAssets.bs"
+
 namespace tests
 
     @SGNode("TVSeasonCard")
@@ -5,11 +7,13 @@ namespace tests
     class TVSeasonCardTests extends rooibos.BaseTestSuite
 
         protected override function beforeEach()
+            m.originalTheme = m.global.theme
             m.originalCountMode = m.global.showUnwatchedEpisodeCount
             m.global.showUnwatchedEpisodeCount = "off"
         end function
 
         protected override function afterEach()
+            m.global.theme = m.originalTheme
             m.global.showUnwatchedEpisodeCount = m.originalCountMode
         end function
 
@@ -295,6 +299,23 @@ namespace tests
             badge = m.top.findNode("watchedIndicator")
             m.assertEqual(badge.translation, [346.0, 9.0])
             m.assertTrue(abs(badge.findNode("countGroup").translation[0] + (badge.findNode("countBackground").width * badge.findNode("countBackground").scale[0]) - 42.0) < 0.001)
+        end function
+
+
+        @describe("themes")
+
+        @it("keeps the large poster mask when the theme changes")
+        function _()
+            component = CreateObject("roSGNode", "TVSeasonCard")
+            item = m.createSeason("Large season", "2024", 8, "")
+            item.addFields({ posterLayout: true })
+            component.itemContent = item
+
+            m.global.theme = "cinema"
+
+            expected = MaskAssets.GetProfile("season-poster-large-mask.png", [400, 603], [267, 402])
+            m.assertEqual(component.findNode("seasonPosterMask").maskUri, expected.uri)
+            m.assertEqual(component.findNode("seasonPosterMask").maskSize, expected.size)
         end function
 
     end class

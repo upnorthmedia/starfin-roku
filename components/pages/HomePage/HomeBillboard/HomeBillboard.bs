@@ -48,9 +48,10 @@ sub initHandlers()
     ' Register after references exist; init renders the current fields.
     m.top.observeField("item", "render")
     m.top.observeField("server", "render")
+    m.top.observeField("visible", "render")
     m.top.observeField("featuredItems", "onFeaturedItemsChanged")
     m.featured.timer.observeField("fire", "onRotateTimerFired")
-    m.global.observeField("theme", "applyTheme")
+    m.global.observeFieldScoped("theme", "applyTheme")
     m.billboard.logo.observeField("loadStatus", "onLogoLoadStatusChanged")
 end sub
 
@@ -76,8 +77,13 @@ end sub
 '-------------------------------------------------------------------------------
 ' A focused media item takes the billboard; otherwise featured titles rotate.
 ' Library tiles bake their name into their artwork, so they never show here.
+' A hidden billboard stops rotating so no artwork is fetched off screen.
 '-------------------------------------------------------------------------------
 sub render()
+    if m.top.visible <> true then
+        setRotation(false)
+        return
+    end if
     item = m.top.item
     if isMediaItem(item) then
         setRotation(false)

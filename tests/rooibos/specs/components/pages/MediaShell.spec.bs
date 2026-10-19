@@ -7,6 +7,14 @@ namespace tests
     @suite("MediaShell component")
     class MediaShellTests extends rooibos.BaseTestSuite
 
+        protected override function beforeEach()
+            m.originalTheme = m.global.theme
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
+        end function
+
         @describe("declarative component contract")
 
         @it("declares the mediaBackgroundFull node")
@@ -1064,7 +1072,6 @@ namespace tests
 
         @it("fades Cinema backdrops with a full-screen gradient and restores the strip for Blue")
         function _()
-            originalTheme = m.global.theme
             gradient = m.top.findNode("contentGradient")
             m.global.theme = "cinema"
 
@@ -1079,7 +1086,6 @@ namespace tests
             m.assertEqual(gradient.translation, [0.0, 490.0])
             m.assertEqual(gradient.height, 740.0)
             m.assertEqual(m.top.findNode("mediaBackgroundFull").opacity, 0.5)
-            m.global.theme = originalTheme
         end function
 
     end class

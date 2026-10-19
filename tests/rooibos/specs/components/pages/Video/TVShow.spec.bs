@@ -5,6 +5,7 @@ namespace tests
     class TVShowTests extends rooibos.BaseTestSuite
 
         protected override function beforeEach()
+            m.originalTheme = m.global.theme
             m.node.watchedTask = m.top.findNode("watchedTask")
             m.node.episodeCountRefresh = CreateObject("roSGNode", "AggregateRefreshTestDouble")
             m.node.pageState.request = m.createRequest()
@@ -33,6 +34,10 @@ namespace tests
             m.top.selectedPerson = invalid
             m.top.overlayRequested = invalid
             m.top.closeRequested = false
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
         end function
 
         @describe("declarative component contract")
@@ -1535,6 +1540,21 @@ namespace tests
 
             m.assertEqual(m.node.pageState.seasons[0].UserData.UnplayedItemCount, 2)
             m.assertEqual(grid.content.getChild(0).raw.UserData.UnplayedItemCount, 2)
+        end function
+
+
+        @describe("themes")
+
+        @it("updates the seasons grid focus frame for the current layout when the theme changes")
+        function _()
+            m.node.layout.isPoster = false
+            m.global.theme = "cinema"
+
+            m.assertEqual(m.top.findNode("seasonsGrid").focusBitmapUri, Theme.FocusFrameUri("cinema", "pkg:/images/tv-show/season-poster-focus-207x381.png"))
+
+            m.global.theme = "blue"
+
+            m.assertEqual(m.top.findNode("seasonsGrid").focusBitmapUri, "pkg:/images/tv-show/season-poster-focus-207x381.png")
         end function
 
     end class

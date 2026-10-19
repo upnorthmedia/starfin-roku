@@ -1,4 +1,5 @@
 import "pkg:/source/Number.bs"
+import "pkg:/source/ResolutionProfile.bs"
 
 namespace tests
 
@@ -6,11 +7,18 @@ namespace tests
     @suite("Header component")
     class HeaderTests extends rooibos.BaseTestSuite
 
+        protected override function beforeEach()
+            m.originalTheme = m.global.theme
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
+        end function
+
         @describe("account badge themes")
 
         @it("applies blue to all badge layers without changing identity or visibility")
         function _()
-            originalTheme = m.global.theme
             badge = m.top.findNode("accountBadge")
             badge.username = "Example"
             badge.imageUri = "pkg:/images/cast/cast-placeholder-195x195.png"
@@ -25,12 +33,10 @@ namespace tests
             m.assertEqual(badge.findNode("badgeName").text, "Example")
             m.assertEqual(badge.findNode("badgeImage").uri, "pkg:/images/cast/cast-placeholder-195x195.png")
             m.assertTrue(badge.visible)
-            m.global.theme = originalTheme
         end function
 
         @it("applies black to all badge layers without changing identity or visibility")
         function _()
-            originalTheme = m.global.theme
             badge = m.top.findNode("accountBadge")
             badge.username = "Example"
             badge.imageUri = "pkg:/images/cast/cast-placeholder-195x195.png"
@@ -45,12 +51,10 @@ namespace tests
             m.assertEqual(badge.findNode("badgeName").text, "Example")
             m.assertEqual(badge.findNode("badgeImage").uri, "pkg:/images/cast/cast-placeholder-195x195.png")
             m.assertTrue(badge.visible)
-            m.global.theme = originalTheme
         end function
 
         @it("applies grey to all badge layers without changing identity or visibility")
         function _()
-            originalTheme = m.global.theme
             badge = m.top.findNode("accountBadge")
             badge.username = "Example"
             badge.imageUri = "pkg:/images/cast/cast-placeholder-195x195.png"
@@ -65,12 +69,10 @@ namespace tests
             m.assertEqual(badge.findNode("badgeName").text, "Example")
             m.assertEqual(badge.findNode("badgeImage").uri, "pkg:/images/cast/cast-placeholder-195x195.png")
             m.assertTrue(badge.visible)
-            m.global.theme = originalTheme
         end function
 
         @it("initializes a hidden badge with the active grey theme")
         function _()
-            originalTheme = m.global.theme
             m.global.theme = "grey"
 
             header = createObject("roSGNode", "Header")
@@ -78,21 +80,18 @@ namespace tests
 
             m.assertFalse(badge.visible)
             m.assertEqual(badge.findNode("badgeMatte").blendColor, &h2D2C2CFF)
-            m.global.theme = originalTheme
         end function
 
         @describe("dropdown themes")
 
         @it("updates both system and account menus when the theme changes")
         function _()
-            originalTheme = m.global.theme
 
             m.global.theme = "black"
 
             expected = Theme.HeaderMenu("black").fillUri
             m.assertEqual(m.top.findNode("systemDropdownMenu").findNode("backgroundColor").uri, expected)
             m.assertEqual(m.top.findNode("accountDropdownMenu").findNode("backgroundColor").uri, expected)
-            m.global.theme = originalTheme
         end function
 
         @describe("declarative component contract")
@@ -435,29 +434,24 @@ namespace tests
 
         @it("keeps Blue's navigation glass for the original themes")
         function _()
-            originalTheme = m.global.theme
             glass = m.top.findNode("navGlassBackground")
             m.global.theme = "grey"
 
             m.assertTrue(glass.visible)
-            m.assertEqual(glass.uri, "pkg:/images/themes/blue/fhd/header-menu-glass.9.png")
-            m.global.theme = originalTheme
+            m.assertEqual(glass.uri, "pkg:/images/themes/blue/" + ResolutionProfile.GetName() + "/header-menu-glass.9.png")
         end function
 
         @it("switches the navigation glass for Liquid Glass")
         function _()
-            originalTheme = m.global.theme
             glass = m.top.findNode("navGlassBackground")
             m.global.theme = "liquid-glass"
 
             m.assertTrue(glass.visible)
             m.assertEqual(glass.uri, "pkg:/images/themes/liquid-glass/fhd/nav-glass.9.png")
-            m.global.theme = originalTheme
         end function
 
         @it("hides the navigation glass for Cinema and restores it afterwards")
         function _()
-            originalTheme = m.global.theme
             glass = m.top.findNode("navGlassBackground")
             m.global.theme = "cinema"
 
@@ -467,8 +461,7 @@ namespace tests
             m.global.theme = "blue"
 
             m.assertTrue(glass.visible)
-            m.assertEqual(glass.uri, "pkg:/images/themes/blue/fhd/header-menu-glass.9.png")
-            m.global.theme = originalTheme
+            m.assertEqual(glass.uri, "pkg:/images/themes/blue/" + ResolutionProfile.GetName() + "/header-menu-glass.9.png")
         end function
 
     end class

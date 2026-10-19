@@ -16,7 +16,7 @@ sub init()
         measurementLabel: CreateObject("roSGNode", "Label")
     }
     m.top.observeField("focusedChild", "onFocusChanged")
-    m.global.observeField("theme", "render")
+    m.global.observeFieldScoped("theme", "render")
     ThemeFont.Apply(m.top, m.global.theme)
     render()
 end sub

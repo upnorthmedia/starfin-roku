@@ -18,7 +18,7 @@ sub init()
     m.bg.color = backgroundColor
     if m.top.fieldWidth = invalid or m.top.fieldWidth <= 0 then m.top.fieldWidth = 624
     if m.top.fieldHeight = invalid or m.top.fieldHeight <= 0 then m.top.fieldHeight = 56
-    m.global.observeField("theme", "updateTheme")
+    m.global.observeFieldScoped("theme", "updateTheme")
     updateTheme()
     onDimensionsChanged()
     onTextChanged()

@@ -21,7 +21,7 @@ sub init()
     m.items.observeField("rowItemFocused", "onRowItemFocused")
     m.items.observeField("focusExitUp", "onFocusExitUp")
     m.items.observeField("focusExitDown", "onFocusExitDown")
-    m.global.observeField("theme", "applyFocusBitmapUri")
+    m.global.observeFieldScoped("theme", "applyFocusBitmapUri")
     ThemeFont.Apply(m.top, m.global.theme)
     onFocusExitAvailabilityChanged()
 end sub

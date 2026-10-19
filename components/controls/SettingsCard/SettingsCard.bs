@@ -21,7 +21,7 @@ sub initHandlers()
     for each fieldName in ["title", "cardWidth", "cardHeight", "headingY", "description", "descriptionHeight", "descriptionTop"]
         m.top.observeField(fieldName, "updateCard")
     end for
-    m.global.observeField("theme", "updateTheme")
+    m.global.observeFieldScoped("theme", "updateTheme")
 end sub
 
 '-------------------------------------------------------------------------------

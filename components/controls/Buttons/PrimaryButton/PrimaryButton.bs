@@ -14,7 +14,7 @@ sub init()
     m.iconPoster = m.top.findNode("icon")
     m.textLabel = m.top.findNode("textLabel")
     m.measurementLabel = CreateObject("roSGNode", "Label")
-    m.global.observeField("theme", "onFocusVisualChanged")
+    m.global.observeFieldScoped("theme", "onThemeChanged")
     onDimensionsChanged()
     onTextFontChanged()
     onTextChanged()
@@ -72,6 +72,15 @@ sub onFocusVisualChanged()
         m.textLabel.color = palette.text
     end if
     onIconUriChanged()
+end sub
+
+'-------------------------------------------------------------------------------
+' onThemeChanged
+'-------------------------------------------------------------------------------
+sub onThemeChanged()
+    ThemeFont.Apply(m.textLabel, m.global.theme)
+    updateContentLayout()
+    onFocusVisualChanged()
 end sub
 
 '-------------------------------------------------------------------------------

@@ -74,11 +74,10 @@ sub initReferences()
     m.relatedItemsGroup = m.top.findNode("relatedItemsGroup")
     m.relatedTitleLabel = m.top.findNode("relatedTitleLabel")
     m.relatedRows = m.top.findNode("relatedRows")
-    m.relatedRows.focusBitmapUri = Theme.FocusFrameUri(m.global.theme, ResolutionAssets.GetHomepageImageUri("home-page-poster-focus.png"))
     m.relatedEpisodesGroup = m.top.findNode("relatedEpisodesGroup")
     m.relatedEpisodesTitleLabel = m.top.findNode("relatedEpisodesTitleLabel")
     m.relatedEpisodeRows = m.top.findNode("relatedEpisodeRows")
-    m.relatedEpisodeRows.focusBitmapUri = Theme.FocusFrameUri(m.global.theme, ResolutionAssets.GetHomepageImageUri("person-episode-focus.png"))
+    applyThemeFocusFrames()
     m.layoutAnimation = m.top.findNode("layoutAnimation")
     m.bioTranslation = m.top.findNode("bioTranslation")
     m.relatedRowsTranslation = m.top.findNode("relatedRowsTranslation")
@@ -86,9 +85,18 @@ sub initReferences()
 end sub
 
 '-------------------------------------------------------------------------------
+' applyThemeFocusFrames
+'-------------------------------------------------------------------------------
+sub applyThemeFocusFrames()
+    m.relatedRows.focusBitmapUri = Theme.FocusFrameUri(m.global.theme, ResolutionAssets.GetHomepageImageUri("home-page-poster-focus.png"))
+    m.relatedEpisodeRows.focusBitmapUri = Theme.FocusFrameUri(m.global.theme, ResolutionAssets.GetHomepageImageUri("person-episode-focus.png"))
+end sub
+
+'-------------------------------------------------------------------------------
 ' initHandlers
 '-------------------------------------------------------------------------------
 sub initHandlers()
+    m.global.observeFieldScoped("theme", "applyThemeFocusFrames")
     m.personTask.observeField("response", "onPersonResponse")
     m.readMoreButton.observeField("buttonSelected", "onReadMoreButtonSelected")
     m.filmographyButton.observeField("buttonSelected", "onFilmographyButtonSelected")

@@ -18,7 +18,7 @@ sub init()
     m.background.uri = m.themePalette.focusedUri
     if m.top.headerBgColor = 0 then m.top.headerBgColor = &h12112BFF
     m.top.observeField("focusedChild", "onFocusChanged")
-    m.global.observeField("theme", "updateTheme")
+    m.global.observeFieldScoped("theme", "updateTheme")
     ThemeFont.Apply(m.top, m.global.theme)
     onDimensionsChanged()
     onTextLayoutChanged()
@@ -172,6 +172,8 @@ end sub
 sub updateTheme()
     m.themePalette = Theme.HeaderButton(m.global.theme)
     m.background.uri = m.themePalette.focusedUri
+    ThemeFont.Apply(m.top, m.global.theme)
+    onTextLayoutChanged()
     onFocusVisualChanged()
 end sub
 

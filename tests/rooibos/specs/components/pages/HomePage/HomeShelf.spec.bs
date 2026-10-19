@@ -6,6 +6,14 @@ namespace tests
     @suite("HomeShelf component")
     class HomeShelfTests extends rooibos.BaseTestSuite
 
+        protected override function beforeEach()
+            m.originalTheme = m.global.theme
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
+        end function
+
         @describe("declarative component contract")
 
         @it("declares the titleLabel node")
@@ -180,7 +188,6 @@ namespace tests
 
         @it("re-corners the focus frame for Cinema and restores it for Blue")
         function _()
-            originalTheme = m.global.theme
             m.top.layout = { width: 486, height: 348, itemSizeWidth: 1824, itemSpacing: -27, spacingAfter: 36, focusBitmapFilename: "home-page-thumbnail-focus.png", itemComponentName: "VideoMediaCard" }
             m.global.theme = "cinema"
 
@@ -189,7 +196,6 @@ namespace tests
             m.global.theme = "blue"
 
             m.assertEqual(m.top.findNode("items").focusBitmapUri, "pkg:/images/homepage/fhd/home-page-thumbnail-focus.png")
-            m.global.theme = originalTheme
         end function
 
 

@@ -25,7 +25,7 @@ sub init()
         measuredTextWidth: 0
     }
     m.top.observeField("focusedChild", "onFocusChanged")
-    m.global.observeField("theme", "onFocusVisualChanged")
+    m.global.observeFieldScoped("theme", "onThemeChanged")
     ThemeFont.Apply(m.top, m.global.theme)
     onTextChanged()
     onIconChanged()
@@ -37,6 +37,17 @@ end sub
 '-------------------------------------------------------------------------------
 sub onTextChanged()
     m.textLabel.text = m.top.text
+    updatePreferredWidth()
+end sub
+
+'-------------------------------------------------------------------------------
+' onThemeChanged
+'-------------------------------------------------------------------------------
+' The typeface changes the measured text width, so the preferred width is
+' recomputed after the font swap rather than from the stale measurement.
+'-------------------------------------------------------------------------------
+sub onThemeChanged()
+    ThemeFont.Apply(m.top, m.global.theme)
     updatePreferredWidth()
 end sub
 

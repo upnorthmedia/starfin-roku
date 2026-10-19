@@ -32,7 +32,7 @@ end sub
 '-------------------------------------------------------------------------------
 sub initHandlers()
     m.top.observeField("itemContent", "onItemContentChanged")
-    m.global.observeField("theme", "onThemeChanged")
+    m.global.observeFieldScoped("theme", "onThemeChanged")
 end sub
 
 '-------------------------------------------------------------------------------

@@ -5,6 +5,7 @@ namespace tests
     class HomeBillboardTests extends rooibos.BaseTestSuite
 
         protected override function beforeEach()
+            m.top.visible = true
             m.top.server = "http://server"
             m.top.featuredItems = []
             m.top.item = {}
@@ -101,6 +102,23 @@ namespace tests
 
             m.assertEqual(m.node.billboard.title.text, "Third")
             m.assertFalse(m.node.featured.active)
+        end function
+
+
+        @it("stops rotating while hidden and resumes from the same title when shown")
+        function _()
+            m.top.featuredItems = [{ Id: "f-1", Type: "Movie", Name: "First", BackdropImageTags: ["a"] }, { Id: "f-2", Type: "Series", Name: "Second", BackdropImageTags: ["b"] }]
+            m.top.item = {}
+
+            m.top.visible = false
+
+            m.assertFalse(m.node.featured.active)
+            m.assertEqual(m.node.featured.timer.control, "stop")
+
+            m.top.visible = true
+
+            m.assertTrue(m.node.featured.active)
+            m.assertEqual(m.node.billboard.title.text, "First")
         end function
 
     end class

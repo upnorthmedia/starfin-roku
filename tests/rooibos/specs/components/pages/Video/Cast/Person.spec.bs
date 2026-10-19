@@ -5,6 +5,7 @@ namespace tests
     class PersonTests extends rooibos.BaseTestSuite
 
         protected override function beforeEach()
+            m.originalTheme = m.global.theme
             m.node.pageState.request = { server: "http://server", token: "token", userId: "user", itemId: "person-1" }
             m.node.pageState.person = m.createPerson()
             m.node.pageState.filmography = invalid
@@ -18,6 +19,10 @@ namespace tests
             m.top.closeRequested = false
             'bs:disable-next-line 1140
             clearRelated()
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
         end function
 
         @describe("declarative component contract")
@@ -626,6 +631,21 @@ namespace tests
             'bs:disable-next-line 1140
             m.assertFalse(onKeyEvent("play", true))
             m.assertInvalid(m.top.playbackSelected)
+        end function
+
+
+        @describe("themes")
+
+        @it("updates the related row focus frames when the theme changes")
+        function _()
+            m.global.theme = "cinema"
+
+            m.assertEqual(m.top.findNode("relatedRows").focusBitmapUri, Theme.FocusFrameUri("cinema", ResolutionAssets.GetHomepageImageUri("home-page-poster-focus.png")))
+            m.assertEqual(m.top.findNode("relatedEpisodeRows").focusBitmapUri, Theme.FocusFrameUri("cinema", ResolutionAssets.GetHomepageImageUri("person-episode-focus.png")))
+
+            m.global.theme = "blue"
+
+            m.assertEqual(m.top.findNode("relatedRows").focusBitmapUri, ResolutionAssets.GetHomepageImageUri("home-page-poster-focus.png"))
         end function
 
     end class

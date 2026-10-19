@@ -100,6 +100,51 @@ namespace tests
             m.assertEqual(label.font.size, 33)
         end function
 
+
+        @describe("cache and metadata")
+
+        @it("shares one Font node between labels of the same size and weight")
+        function _()
+            first = CreateObject("roSGNode", "Label")
+            first.font = "font:MediumSystemFont"
+            second = CreateObject("roSGNode", "Label")
+            second.font = "font:MediumSystemFont"
+
+            ThemeFont.Apply(first, "cinema")
+            ThemeFont.Apply(second, "cinema")
+
+            m.assertTrue(first.font.isSameNode(second.font))
+        end function
+
+        @it("re-describes a system font replaced after an earlier pass")
+        function _()
+            label = CreateObject("roSGNode", "Label")
+            label.font = "font:MediumSystemFont"
+            ThemeFont.Apply(label, "cinema")
+
+            label.font = "font:SmallSystemFont"
+            ThemeFont.Apply(label, "cinema")
+
+            m.assertEqual(label.font.uri, "pkg:/fonts/cinema/Montserrat-Medium.ttf")
+            m.assertEqual(label.font.size, ThemeFont.ScaledSize(33, Theme.Fonts("cinema")))
+        end function
+
+        @it("leaves a custom font alone after a bundled font was applied earlier")
+        function _()
+            label = CreateObject("roSGNode", "Label")
+            label.font = "font:MediumSystemFont"
+            ThemeFont.Apply(label, "cinema")
+            custom = CreateObject("roSGNode", "Font")
+            custom.uri = "pkg:/fonts/liquid-glass/Inter-Regular.ttf"
+            custom.size = 20
+            label.font = custom
+
+            ThemeFont.Apply(label, "cinema")
+
+            m.assertEqual(label.font.uri, "pkg:/fonts/liquid-glass/Inter-Regular.ttf")
+            m.assertEqual(label.font.size, 20)
+        end function
+
     end class
 
 end namespace

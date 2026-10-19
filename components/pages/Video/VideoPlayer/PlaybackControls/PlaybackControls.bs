@@ -29,7 +29,7 @@ sub init()
 
     initIcons()
     initHandlers()
-    m.global.observeField("theme", "applyTheme")
+    m.global.observeFieldScoped("theme", "applyTheme")
     applyTheme()
     onTitleChanged()
     onSubtitleChanged()

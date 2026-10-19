@@ -10,7 +10,7 @@ sub init()
     m.layout = {
         borderPadding: 1
     }
-    m.global.observeField("theme", "updateTheme")
+    m.global.observeFieldScoped("theme", "updateTheme")
     updateTheme()
 
     ' Register after references and layout state exist, then apply current values.

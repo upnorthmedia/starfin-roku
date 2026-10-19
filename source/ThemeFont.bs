@@ -32,14 +32,10 @@ namespace ThemeFont
     '---------------------------------------------------------------------------
     ' ThemeFont.__ReferenceWidths
     '---------------------------------------------------------------------------
-    ' Regular and bold system font widths per size, measured once per thread.
+    ' Regular and bold system font widths per size, measured once per app.
     '---------------------------------------------------------------------------
     function __ReferenceWidths(size as integer) as object
-        cache = GetGlobalAA().themeFontReferenceWidths
-        if cache = invalid then
-            cache = {}
-            GetGlobalAA().themeFontReferenceWidths = cache
-        end if
+        cache = __GlobalCache("themeFontReferenceWidths")
         key = size.ToStr()
         widths = cache[key]
         if widths = invalid then
@@ -48,8 +44,23 @@ namespace ThemeFont
                 regular: __MeasureWidth(invalid, "font:MediumSystemFont", size)
             }
             cache[key] = widths
+            m.global.themeFontReferenceWidths = cache
         end if
         return widths
+    end function
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__GlobalCache
+    '---------------------------------------------------------------------------
+    ' Caches live on the global node so every component instance shares them;
+    ' each component script has its own GetGlobalAA(). Callers write back the
+    ' field after changing the returned copy.
+    '---------------------------------------------------------------------------
+    function __GlobalCache(fieldName as string) as object
+        if m.global.hasField(fieldName) = false then m.global.addField(fieldName, "assocarray", false)
+        cache = m.global[fieldName]
+        if cache = invalid then cache = {}
+        return cache
     end function
 
     '---------------------------------------------------------------------------
@@ -113,20 +124,17 @@ namespace ThemeFont
         size = ScaledSize(info.size, family)
         if current.uri = uri and current.size = size then return
         node.setField(fieldName, __SharedFont(uri, size))
+        __RememberApplied(node, fieldName, info, uri, size)
     end sub
 
     '---------------------------------------------------------------------------
     ' ThemeFont.__SharedFont
     '---------------------------------------------------------------------------
-    ' One Font node per typeface and size, shared by every label on the render
-    ' thread; a Font node per label exhausts texture memory on low-end devices.
+    ' One Font node per typeface and size, shared by every label in the app;
+    ' a Font node per label exhausts texture memory on low-end devices.
     '---------------------------------------------------------------------------
     function __SharedFont(uri as string, size as integer) as object
-        cache = GetGlobalAA().themeFontCache
-        if cache = invalid then
-            cache = {}
-            GetGlobalAA().themeFontCache = cache
-        end if
+        cache = __GlobalCache("themeFontCache")
         key = uri + "@" + size.ToStr()
         font = cache[key]
         if font = invalid then
@@ -134,6 +142,7 @@ namespace ThemeFont
             font.uri = uri
             font.size = size
             cache[key] = font
+            m.global.themeFontCache = cache
         end if
         return font
     end function
@@ -154,23 +163,41 @@ namespace ThemeFont
     ' ThemeFont.__ResolveInfo
     '---------------------------------------------------------------------------
     ' Returns the system font weight and size behind a field, remembering them
-    ' on the node so a bundled typeface can later be swapped back. Fields that
-    ' already carry another custom font file are left alone.
+    ' on the node so a bundled typeface can later be swapped back. A system
+    ' font is described afresh each time because the owner may have replaced
+    ' it since the last pass; a bundled font this helper applied reuses the
+    ' remembered description; any other custom font file is left alone.
     '---------------------------------------------------------------------------
     function __ResolveInfo(node as object, fieldName as string, current as object) as dynamic
-        infos = invalid
-        if node.hasField("themeFontInfo") then infos = node.themeFontInfo
-        if infos <> invalid and infos[fieldName] <> invalid then return infos[fieldName]
-        if current.uri <> "" then return invalid
-        info = Describe(current)
-        if infos = invalid then
-            infos = {}
-            node.addField("themeFontInfo", "assocarray", false)
+        infos = {}
+        if node.hasField("themeFontInfo") and node.themeFontInfo <> invalid then infos = node.themeFontInfo
+        cached = infos[fieldName]
+        if current.uri <> "" then
+            if cached <> invalid and cached.appliedUri = current.uri and cached.appliedSize = current.size then return cached
+            if cached <> invalid then
+                infos.Delete(fieldName)
+                node.themeFontInfo = infos
+            end if
+            return invalid
         end if
+        info = Describe(current)
+        if node.hasField("themeFontInfo") = false then node.addField("themeFontInfo", "assocarray", false)
         infos[fieldName] = info
         node.themeFontInfo = infos
         return info
     end function
+
+    '---------------------------------------------------------------------------
+    ' ThemeFont.__RememberApplied
+    '---------------------------------------------------------------------------
+    sub __RememberApplied(node as object, fieldName as string, info as object, uri as string, size as integer)
+        info.appliedUri = uri
+        info.appliedSize = size
+        infos = node.themeFontInfo
+        if infos = invalid then infos = {}
+        infos[fieldName] = info
+        node.themeFontInfo = infos
+    end sub
 
     '---------------------------------------------------------------------------
     ' ThemeFont.__MeasureWidth
