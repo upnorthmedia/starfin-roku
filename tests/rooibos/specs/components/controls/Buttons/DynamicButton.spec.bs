@@ -1,8 +1,18 @@
+import "pkg:/source/TextMeasurement.bs"
+
 namespace tests
 
     @SGNode("DynamicButton")
     @suite("DynamicButton component")
     class DynamicButtonTests extends rooibos.BaseTestSuite
+
+        protected override function beforeEach()
+            m.originalTheme = m.global.theme
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
+        end function
 
         @describe("declarative component contract")
 
@@ -35,7 +45,6 @@ namespace tests
 
         @it("renders the normal icon without focus")
         function _()
-            m.top.hasFocusVisual = false
             m.top.icon = "pkg:/images/icons/play.png"
 
             'bs:disable-next-line 1140
@@ -94,7 +103,6 @@ namespace tests
 
         @it("collapses and hides text without focus")
         function _()
-            m.top.hasFocusVisual = false
 
             'bs:disable-next-line 1140
             onFocusVisualChanged()
@@ -169,7 +177,6 @@ namespace tests
 
         @it("keeps long labels collapsed until focused")
         function _()
-            m.top.hasFocusVisual = false
             m.top.text = "Resume S123:E456"
 
             m.assertEqual(m.node.background.width, 64.0)
@@ -230,7 +237,6 @@ namespace tests
             m.top.maxWidth = 0
             m.top.alwaysShowText = true
             m.top.text = "1080p H.264"
-            m.top.hasFocusVisual = false
 
             m.assertTrue(m.node.textLabel.visible)
             m.assertFalse(m.node.iconPoster.visible)
@@ -244,7 +250,6 @@ namespace tests
             m.top.maxWidth = 0
             m.top.alwaysShowText = true
             m.top.text = "1080p H.264"
-            m.top.hasFocusVisual = false
             width = m.node.background.width
 
             m.top.hasFocusVisual = true
@@ -310,7 +315,6 @@ namespace tests
         function _()
             m.top.setFields({ icon: "pkg:/images/icons/media-toolbar/play-light.png", text: "Play", expandedWidth: 300, maxWidth: 0, centerContent: false, alwaysShowText: false, hasFocusVisual: true })
 
-            m.top.hasFocusVisual = false
 
             m.assertEqual(m.node.background.width, 64.0)
             m.assertEqual(m.node.iconPoster.translation[0], 16.0)
@@ -325,7 +329,6 @@ namespace tests
             m.top.focusedIcon = ""
             m.top.alwaysShowText = true
             m.top.text = "1080p H.264"
-            m.top.hasFocusVisual = false
 
             label = m.node.textLabel
             m.assertEqual(label.horizAlign, "center")
@@ -338,7 +341,6 @@ namespace tests
             m.top.focusedIcon = ""
             m.top.alwaysShowText = true
             m.top.text = "1080p H.264"
-            m.top.hasFocusVisual = false
             width = m.node.background.width
 
             m.top.hasFocusVisual = true
@@ -359,6 +361,37 @@ namespace tests
             m.assertTrue(m.node.textLabel.translation[0] = m.node.iconPoster.translation[0] + 44)
             rightInset = m.node.background.width - m.node.textLabel.translation[0] - m.node.textLabel.width
             m.assertTrue(m.node.iconPoster.translation[0] = rightInset - 2)
+        end function
+
+
+        @describe("themes")
+
+        @it("uses the Cinema pills and text colors")
+        function _()
+            m.global.theme = "cinema"
+
+            m.assertEqual(m.node.background.uri, "pkg:/images/themes/cinema/fhd/pill.9.png")
+            m.assertEqual(m.node.textLabel.color, &hF3F7FBFF)
+
+            m.top.hasFocusVisual = true
+
+            m.assertEqual(m.node.background.uri, "pkg:/images/themes/cinema/fhd/pill-focused.9.png")
+            m.assertEqual(m.node.textLabel.color, &h000000FF)
+        end function
+
+
+        @it("applies the theme typeface and remeasures its text when the theme changes")
+        function _()
+            m.top.text = "Resume"
+            m.global.theme = "cinema"
+
+            m.assertEqual(Left(m.node.textLabel.font.uri, 18), "pkg:/fonts/cinema/")
+            m.assertEqual(m.node.layout.measuredTextWidth, TextMeasurement.GetWidth(m.node.measurementLabel, m.node.textLabel.font, "Resume"))
+
+            m.global.theme = "blue"
+
+            m.assertEqual(m.node.textLabel.font.uri, "")
+            m.assertEqual(m.node.layout.measuredTextWidth, TextMeasurement.GetWidth(m.node.measurementLabel, m.node.textLabel.font, "Resume"))
         end function
 
     end class

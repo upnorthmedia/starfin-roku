@@ -7,6 +7,7 @@ namespace tests
     class TVSeasonTests extends rooibos.BaseTestSuite
 
         protected override function beforeEach()
+            m.originalTheme = m.global.theme
             m.originalCountMode = m.global.showUnwatchedEpisodeCount
             m.node.episodeCountRefresh.callFunc("cancel")
             m.global.showUnwatchedEpisodeCount = "off"
@@ -39,6 +40,7 @@ namespace tests
         end function
 
         protected override function afterEach()
+            m.global.theme = m.originalTheme
             m.node.episodeCountRefresh.callFunc("cancel")
             m.global.showUnwatchedEpisodeCount = m.originalCountMode
         end function
@@ -1438,6 +1440,21 @@ namespace tests
             notifySeasonWatchedStateChanged(m.node.pageState.season)
 
             m.assertInvalid(m.top.seasonWatchedStateChanged)
+        end function
+
+
+        @describe("themes")
+
+        @it("updates the episode focus frames when the theme changes")
+        function _()
+            m.global.theme = "cinema"
+
+            m.assertEqual(m.top.findNode("episodesList").focusBitmapUri, Theme.FocusFrameUri("cinema", "pkg:/images/tv-season/episode-thumbnail-horizontal-focus-576x591.png"))
+            m.assertEqual(m.top.findNode("episodesGrid").focusBitmapUri, Theme.FocusFrameUri("cinema", "pkg:/images/tv-season/episode-thumbnail-vertical-focus-576x591.png"))
+
+            m.global.theme = "blue"
+
+            m.assertEqual(m.top.findNode("episodesList").focusBitmapUri, "pkg:/images/tv-season/episode-thumbnail-horizontal-focus-576x591.png")
         end function
 
     end class

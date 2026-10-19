@@ -6,6 +6,14 @@ namespace tests
     @suite("HomeShelf component")
     class HomeShelfTests extends rooibos.BaseTestSuite
 
+        protected override function beforeEach()
+            m.originalTheme = m.global.theme
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
+        end function
+
         @describe("declarative component contract")
 
         @it("declares the titleLabel node")
@@ -173,6 +181,38 @@ namespace tests
 
             m.assertEqual(m.top.findNode("items").jumpToRowItem, [0, 1])
             m.assertTrue(m.top.findNode("items").isInFocusChain())
+        end function
+
+
+        @describe("themes")
+
+        @it("re-corners the focus frame for Cinema and restores it for Blue")
+        function _()
+            m.top.layout = { width: 486, height: 348, itemSizeWidth: 1824, itemSpacing: -27, spacingAfter: 36, focusBitmapFilename: "home-page-thumbnail-focus.png", itemComponentName: "VideoMediaCard" }
+            m.global.theme = "cinema"
+
+            m.assertEqual(m.top.findNode("items").focusBitmapUri, "pkg:/images/themes/cinema/focus/fhd/home-page-thumbnail-focus.png")
+
+            m.global.theme = "blue"
+
+            m.assertEqual(m.top.findNode("items").focusBitmapUri, "pkg:/images/homepage/fhd/home-page-thumbnail-focus.png")
+        end function
+
+
+        @it("reports the focused item index")
+        function _()
+            content = CreateObject("roSGNode", "ContentNode")
+            content.AddFields({ rowKey: "row" })
+            for each id in ["a", "b"]
+                child = content.createChild("ContentNode")
+                child.AddFields({ raw: { Id: id, Type: "Movie" } })
+            end for
+            m.top.layout = { width: 297, height: 465, itemSizeWidth: 1824, itemSpacing: -27, spacingAfter: 36, focusBitmapFilename: "home-page-poster-focus.png", itemComponentName: "VideoMediaCard" }
+            m.top.rowContent = content
+
+            m.top.findNode("items").jumpToRowItem = [0, 1]
+
+            m.assertEqual(m.top.callFunc("getFocusedItemIndex"), 1)
         end function
 
     end class

@@ -2,6 +2,7 @@ import "pkg:/source/String.bs"
 import "pkg:/source/Remote.bs"
 import "pkg:/source/ResolutionProfile.bs"
 import "pkg:/source/ResolutionAssets.bs"
+import "pkg:/source/Theme.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -10,6 +11,7 @@ sub init()
     m.background = m.top.findNode("background")
     m.sortOrderIcon = m.top.findNode("sortOrderIcon")
     m.top.observeField("focusedChild", "onFocusChanged")
+    m.global.observeFieldScoped("theme", "updateFocusVisual")
     updateFocusability()
     updateSortDisplay()
     updateFocusVisual()
@@ -26,8 +28,9 @@ end sub
 ' updateFocusVisual
 '-------------------------------------------------------------------------------
 sub updateFocusVisual()
+    palette = Theme.Button(m.global.theme)
     if isSortEnabled() <> true then
-        m.background.uri = ResolutionAssets.GetButtonImageUri("primary-unfocused.9.png")
+        m.background.uri = palette.unfocusedUri
         m.sortOrderIcon.opacity = 0.45
         updateSortDisplay()
         return
@@ -35,9 +38,9 @@ sub updateFocusVisual()
 
     m.sortOrderIcon.opacity = 1.0
     if m.top.isInFocusChain() then
-        m.background.uri = ResolutionAssets.GetButtonImageUri("primary-focused.9.png")
+        m.background.uri = palette.focusedUri
     else
-        m.background.uri = ResolutionAssets.GetButtonImageUri("primary-unfocused.9.png")
+        m.background.uri = palette.unfocusedUri
     end if
 
     updateSortDisplay()

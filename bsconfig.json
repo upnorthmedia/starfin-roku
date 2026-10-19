@@ -4,7 +4,8 @@
         "manifest",
         "source/**/*",
         "components/**/*",
-        "images/**/*"
+        "images/**/*",
+        "fonts/**/*"
     ],
     "bs_const": {
         "playbackChaosMonkey": true

@@ -32,6 +32,14 @@ end sub
 '-------------------------------------------------------------------------------
 sub initHandlers()
     m.top.observeField("itemContent", "onItemContentChanged")
+    m.global.observeFieldScoped("theme", "onThemeChanged")
+end sub
+
+'-------------------------------------------------------------------------------
+' onThemeChanged
+'-------------------------------------------------------------------------------
+sub onThemeChanged()
+    MaskAssets.Apply(m.posterMask, "episode-thumbnail-mask.png", [531, 300], [354, 200])
 end sub
 
 '-------------------------------------------------------------------------------

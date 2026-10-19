@@ -5,6 +5,7 @@ import "pkg:/source/MaskAssets.bs"
 import "pkg:/source/ResolutionProfile.bs"
 import "pkg:/source/ResolutionAssets.bs"
 import "pkg:/source/MediaMetadataFormatting.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -35,6 +36,27 @@ end sub
 '-------------------------------------------------------------------------------
 sub initHandlers()
     m.top.observeField("itemContent", "onItemContentChanged")
+    m.global.observeFieldScoped("theme", "onThemeChanged")
+    ThemeFont.Apply(m.top, m.global.theme)
+end sub
+
+'-------------------------------------------------------------------------------
+' onThemeChanged
+'-------------------------------------------------------------------------------
+sub onThemeChanged()
+    applyPosterMask(m.posterLayout)
+    ThemeFont.Apply(m.top, m.global.theme)
+end sub
+
+'-------------------------------------------------------------------------------
+' applyPosterMask
+'-------------------------------------------------------------------------------
+sub applyPosterMask(isPoster as boolean)
+    if isPoster then
+        MaskAssets.Apply(m.posterMask, "season-poster-large-mask.png", [400, 603], [267, 402])
+    else
+        MaskAssets.Apply(m.posterMask, "season-poster-mask.png", [207, 312], [138, 208])
+    end if
 end sub
 
 '-------------------------------------------------------------------------------
@@ -69,9 +91,9 @@ end sub
 sub applyPosterLayout(isPoster as boolean)
     if m.posterLayout = isPoster then return
     m.posterLayout = isPoster
+    applyPosterMask(isPoster)
 
     if isPoster then
-        MaskAssets.Apply(m.posterMask, "season-poster-large-mask.png", [400, 603], [267, 402])
         m.placeholder.width = 400
         m.placeholder.height = 603
         m.poster.width = 400
@@ -82,7 +104,6 @@ sub applyPosterLayout(isPoster as boolean)
         m.year.translation = [0, 648]
         m.year.width = 400
     else
-        MaskAssets.Apply(m.posterMask, "season-poster-mask.png", [207, 312], [138, 208])
         m.placeholder.width = 207
         m.placeholder.height = 312
         m.poster.width = 207

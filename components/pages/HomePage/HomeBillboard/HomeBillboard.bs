@@ -1,0 +1,280 @@
+import "pkg:/source/String.bs"
+import "pkg:/source/Array.bs"
+import "pkg:/source/Format.bs"
+import "pkg:/source/Number.bs"
+import "pkg:/source/ItemImage.bs"
+import "pkg:/source/JellyfinImage.bs"
+import "pkg:/source/Url.bs"
+import "pkg:/source/MediaMetadataFormatting.bs"
+import "pkg:/source/TimerControl.bs"
+import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
+
+'-------------------------------------------------------------------------------
+' init
+'-------------------------------------------------------------------------------
+sub init()
+    initReferences()
+    initHandlers()
+    applyTheme()
+end sub
+
+'-------------------------------------------------------------------------------
+' initReferences
+'-------------------------------------------------------------------------------
+sub initReferences()
+    m.billboard = {
+        backdrop: m.top.findNode("backdrop")
+        fade: m.top.findNode("fade")
+        logo: m.top.findNode("logo")
+        title: m.top.findNode("titleLabel")
+        meta: m.top.findNode("metaLabel")
+        overview: m.top.findNode("overviewLabel")
+        backdropUrl: ""
+        logoUrl: ""
+    }
+    ' Featured titles rotate while no media item below is focused.
+    m.featured = {
+        timer: m.top.findNode("rotateTimer")
+        index: 0
+        active: false
+    }
+end sub
+
+'-------------------------------------------------------------------------------
+' initHandlers
+'-------------------------------------------------------------------------------
+sub initHandlers()
+    ' Register after references exist; init renders the current fields.
+    m.top.observeField("item", "render")
+    m.top.observeField("server", "render")
+    m.top.observeField("visible", "render")
+    m.top.observeField("featuredItems", "onFeaturedItemsChanged")
+    m.featured.timer.observeField("fire", "onRotateTimerFired")
+    m.global.observeFieldScoped("theme", "applyTheme")
+    m.billboard.logo.observeField("loadStatus", "onLogoLoadStatusChanged")
+end sub
+
+'-------------------------------------------------------------------------------
+' applyTheme
+'-------------------------------------------------------------------------------
+sub applyTheme()
+    m.billboard.fade.uri = "pkg:/images/themes/" + Theme.Normalize(m.global.theme) + "/billboard-fade.png"
+    ThemeFont.Apply(m.top, m.global.theme)
+    render()
+end sub
+
+'-------------------------------------------------------------------------------
+' onFeaturedItemsChanged
+'-------------------------------------------------------------------------------
+sub onFeaturedItemsChanged()
+    m.featured.index = 0
+    render()
+end sub
+
+'-------------------------------------------------------------------------------
+' render
+'-------------------------------------------------------------------------------
+' A focused media item takes the billboard; otherwise featured titles rotate.
+' Library tiles bake their name into their artwork, so they never show here.
+' A hidden billboard stops rotating so no artwork is fetched off screen.
+'-------------------------------------------------------------------------------
+sub render()
+    if m.top.visible <> true then
+        setRotation(false)
+        return
+    end if
+    item = m.top.item
+    if isMediaItem(item) then
+        setRotation(false)
+        showItem(item)
+        return
+    end if
+
+    featured = getFeaturedItems()
+    if featured.Count() = 0 then
+        setRotation(false)
+        clearBillboard()
+        return
+    end if
+
+    if m.featured.index >= featured.Count() then m.featured.index = 0
+    showItem(featured[m.featured.index])
+    setRotation(featured.Count() > 1)
+end sub
+
+'-------------------------------------------------------------------------------
+' onRotateTimerFired
+'-------------------------------------------------------------------------------
+sub onRotateTimerFired()
+    featured = getFeaturedItems()
+    if featured.Count() = 0 or m.featured.active <> true then return
+    m.featured.index = (m.featured.index + 1) mod featured.Count()
+    showItem(featured[m.featured.index])
+end sub
+
+'-------------------------------------------------------------------------------
+' setRotation
+'-------------------------------------------------------------------------------
+sub setRotation(active as boolean)
+    if active = m.featured.active then return
+    m.featured.active = active
+    if active then
+        m.featured.timer.control = TimerControl.Command.Start
+    else
+        m.featured.timer.control = TimerControl.Command.Stop
+    end if
+end sub
+
+'-------------------------------------------------------------------------------
+' getFeaturedItems
+'-------------------------------------------------------------------------------
+function getFeaturedItems() as object
+    items = m.top.featuredItems
+    if Type(items) <> "roArray" then return []
+    return items
+end function
+
+'-------------------------------------------------------------------------------
+' isMediaItem
+'-------------------------------------------------------------------------------
+function isMediaItem(item as dynamic) as boolean
+    if Arrays.IsAssocArray(item) = false then return false
+    if Strings.ToString(item.Id) = "" then return false
+    return isLibrary(item) = false
+end function
+
+'-------------------------------------------------------------------------------
+' isLibrary
+'-------------------------------------------------------------------------------
+function isLibrary(item as object) as boolean
+    itemType = LCase(Strings.ToString(item.Type))
+    return itemType = "collectionfolder" or itemType = "userview" or itemType = "folder" or Strings.ToString(item.CollectionType) <> ""
+end function
+
+'-------------------------------------------------------------------------------
+' showItem
+'-------------------------------------------------------------------------------
+sub showItem(item as object)
+    setBackdrop(getBackdropUrl(item))
+    setLogo(getLogoUrl(item), getTitle(item))
+    m.billboard.meta.text = getMetadataText(item)
+    m.billboard.overview.text = Strings.ToString(item.Overview)
+end sub
+
+'-------------------------------------------------------------------------------
+' clearBillboard
+'-------------------------------------------------------------------------------
+sub clearBillboard()
+    setBackdrop("")
+    setLogo("", "")
+    m.billboard.meta.text = ""
+    m.billboard.overview.text = ""
+end sub
+
+'-------------------------------------------------------------------------------
+' setBackdrop
+'-------------------------------------------------------------------------------
+sub setBackdrop(imageUrl as string)
+    if imageUrl = m.billboard.backdropUrl then return
+    m.billboard.backdropUrl = imageUrl
+    m.billboard.backdrop.uri = imageUrl
+    m.billboard.backdrop.visible = imageUrl <> ""
+end sub
+
+'-------------------------------------------------------------------------------
+' setLogo
+'-------------------------------------------------------------------------------
+' The title label stands in until a logo loads, and stays when there is none.
+'-------------------------------------------------------------------------------
+sub setLogo(imageUrl as string, title as string)
+    m.billboard.title.text = title
+    if imageUrl <> m.billboard.logoUrl then
+        m.billboard.logoUrl = imageUrl
+        m.billboard.logo.uri = imageUrl
+    end if
+    showLogo = imageUrl <> "" and m.billboard.logo.loadStatus = "ready" and m.billboard.logo.uri = imageUrl
+    m.billboard.logo.visible = showLogo
+    m.billboard.title.visible = showLogo = false and title <> ""
+end sub
+
+'-------------------------------------------------------------------------------
+' onLogoLoadStatusChanged
+'-------------------------------------------------------------------------------
+sub onLogoLoadStatusChanged()
+    if m.billboard.logo.uri <> m.billboard.logoUrl then return
+    ready = m.billboard.logo.loadStatus = "ready"
+    m.billboard.logo.visible = ready and m.billboard.logoUrl <> ""
+    m.billboard.title.visible = m.billboard.logo.visible = false and m.billboard.title.text <> ""
+end sub
+
+'-------------------------------------------------------------------------------
+' getBackdropUrl
+'-------------------------------------------------------------------------------
+' Episodes borrow their series backdrop; thumbs and primary art are fallbacks.
+'-------------------------------------------------------------------------------
+function getBackdropUrl(item as object) as string
+    server = Strings.ToString(m.top.server)
+    if server = "" then return ""
+    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Backdrop, 800, 450)
+    if imageUrl <> "" then return imageUrl
+    parentId = Strings.ToString(item.ParentBackdropItemId)
+    parentTags = item.ParentBackdropImageTags
+    if parentId <> "" and Type(parentTags) = "roArray" and parentTags.Count() > 0 then
+        return Url.BuildImageUrl(server, parentId, JellyfinImage.Type.Backdrop, Strings.ToString(parentTags[0]), 800, 450, invalid)
+    end if
+    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Thumb, 800, 450)
+    if imageUrl <> "" then return imageUrl
+    return ItemImage.GetUrl(server, item, JellyfinImage.Type.Primary, 800, 450)
+end function
+
+'-------------------------------------------------------------------------------
+' getLogoUrl
+'-------------------------------------------------------------------------------
+function getLogoUrl(item as object) as string
+    server = Strings.ToString(m.top.server)
+    if server = "" then return ""
+    imageUrl = ItemImage.GetUrl(server, item, JellyfinImage.Type.Logo, 560, 190, { format: "Png" })
+    if imageUrl <> "" then return imageUrl
+    logoId = Strings.ToString(item.ParentLogoItemId)
+    logoTag = Strings.ToString(item.ParentLogoImageTag)
+    if logoId = "" or logoTag = "" then return ""
+    return Url.BuildImageUrl(server, logoId, JellyfinImage.Type.Logo, logoTag, 560, 190, { format: "Png" })
+end function
+
+'-------------------------------------------------------------------------------
+' getTitle
+'-------------------------------------------------------------------------------
+function getTitle(item as object) as string
+    if isEpisode(item) then return Format.FirstNonEmpty([item.SeriesName, item.Name], "")
+    return Strings.ToString(item.Name)
+end function
+
+'-------------------------------------------------------------------------------
+' getMetadataText
+'-------------------------------------------------------------------------------
+function getMetadataText(item as object) as string
+    parts = []
+    if isEpisode(item) then
+        season = Number.ToInteger(item.ParentIndexNumber, 0)
+        episode = Number.ToInteger(item.IndexNumber, 0)
+        if season > 0 and episode > 0 then parts.Push("S" + season.ToStr() + ":E" + episode.ToStr())
+        if Strings.ToString(item.Name) <> "" then parts.Push(Strings.ToString(item.Name))
+    else
+        year = Strings.ToString(item.ProductionYear)
+        if year <> "" then parts.Push(year)
+        runtime = MediaMetadataFormatting.FormatRuntime(item.RunTimeTicks)
+        if runtime <> "" then parts.Push(runtime)
+        rating = Strings.ToString(item.OfficialRating)
+        if rating <> "" then parts.Push(rating)
+        if Type(item.Genres) = "roArray" and item.Genres.Count() > 0 then parts.Push(Strings.ToString(item.Genres[0]))
+    end if
+    return Arrays.JoinStringValues(parts, MediaMetadataFormatting.BulletSeparator())
+end function
+
+'-------------------------------------------------------------------------------
+' isEpisode
+'-------------------------------------------------------------------------------
+function isEpisode(item as object) as boolean
+    return LCase(Strings.ToString(item.Type)) = "episode"
+end function

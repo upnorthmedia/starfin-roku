@@ -3,6 +3,8 @@ import "pkg:/source/MediaState.bs"
 import "pkg:/source/PlaybackProgress.bs"
 import "pkg:/source/ResolutionProfile.bs"
 import "pkg:/source/ResolutionAssets.bs"
+import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -19,6 +21,8 @@ sub init()
     m.items.observeField("rowItemFocused", "onRowItemFocused")
     m.items.observeField("focusExitUp", "onFocusExitUp")
     m.items.observeField("focusExitDown", "onFocusExitDown")
+    m.global.observeFieldScoped("theme", "applyFocusBitmapUri")
+    ThemeFont.Apply(m.top, m.global.theme)
     onFocusExitAvailabilityChanged()
 end sub
 
@@ -54,6 +58,15 @@ function getFocusedItem() as dynamic
     if itemNode = invalid then return invalid
 
     return itemNode.raw
+end function
+
+'-------------------------------------------------------------------------------
+' getFocusedItemIndex
+'-------------------------------------------------------------------------------
+function getFocusedItemIndex() as integer
+    focused = m.items.rowItemFocused
+    if focused = invalid or focused.Count() < 2 then return -1
+    return focused[1]
 end function
 
 '-------------------------------------------------------------------------------
@@ -180,6 +193,7 @@ end sub
 '-------------------------------------------------------------------------------
 sub onRowItemFocused()
     applyFocusBitmapUri()
+    m.top.focusedItemChanged = true
 end sub
 
 '-------------------------------------------------------------------------------
@@ -194,7 +208,7 @@ sub applyFocusBitmapUri()
         end if
     end if
 
-    m.items.focusBitmapUri = ResolutionAssets.GetHomepageImageUri(focusBitmapFilename)
+    m.items.focusBitmapUri = Theme.FocusFrameUri(m.global.theme, ResolutionAssets.GetHomepageImageUri(focusBitmapFilename))
 end sub
 
 '-------------------------------------------------------------------------------

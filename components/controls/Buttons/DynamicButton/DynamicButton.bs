@@ -1,5 +1,7 @@
 import "pkg:/source/Remote.bs"
 import "pkg:/source/TextMeasurement.bs"
+import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -23,6 +25,8 @@ sub init()
         measuredTextWidth: 0
     }
     m.top.observeField("focusedChild", "onFocusChanged")
+    m.global.observeFieldScoped("theme", "onThemeChanged")
+    ThemeFont.Apply(m.top, m.global.theme)
     onTextChanged()
     onIconChanged()
     onFocusVisualChanged()
@@ -33,6 +37,17 @@ end sub
 '-------------------------------------------------------------------------------
 sub onTextChanged()
     m.textLabel.text = m.top.text
+    updatePreferredWidth()
+end sub
+
+'-------------------------------------------------------------------------------
+' onThemeChanged
+'-------------------------------------------------------------------------------
+' The typeface changes the measured text width, so the preferred width is
+' recomputed after the font swap rather than from the stale measurement.
+'-------------------------------------------------------------------------------
+sub onThemeChanged()
+    ThemeFont.Apply(m.top, m.global.theme)
     updatePreferredWidth()
 end sub
 
@@ -84,11 +99,12 @@ end sub
 ' updateBackground
 '-------------------------------------------------------------------------------
 sub updateBackground(hasFocus as boolean)
+    palette = Theme.ToolbarButton(m.global.theme)
     if hasFocus then
-        m.background.uri = "pkg:/images/buttons/media-toolbar-button-focused.9.png"
+        m.background.uri = palette.focusedUri
         m.background.width = m.top.preferredWidth
     else
-        m.background.uri = "pkg:/images/buttons/media-toolbar-button-unfocused.9.png"
+        m.background.uri = palette.unfocusedUri
         m.background.width = m.layout.collapsedWidth
     end if
 
@@ -132,10 +148,11 @@ end sub
 ' updateContentColors
 '-------------------------------------------------------------------------------
 sub updateContentColors(hasFocus as boolean)
+    palette = Theme.ToolbarButton(m.global.theme)
     if hasFocus then
-        m.textLabel.color = &h0F1A2AFF
+        m.textLabel.color = palette.focusedText
     else
-        m.textLabel.color = &hF3F7FBFF
+        m.textLabel.color = palette.text
     end if
     onIconChanged()
 end sub

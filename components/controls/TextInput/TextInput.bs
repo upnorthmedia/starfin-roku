@@ -8,13 +8,34 @@ sub init()
     m.focusFrame = m.top.findNode("focusFrame")
     m.bg = m.top.findNode("bg")
     m.textLabel = m.top.findNode("textLabel")
+    m.skinPanels = {
+        field: m.top.findNode("bgPanel")
+        focus: m.top.findNode("focusPanel")
+        active: false
+    }
     backgroundColor = Theme.Get().background.primary
     m.focusFramePlaceholder.color = backgroundColor
     m.bg.color = backgroundColor
     if m.top.fieldWidth = invalid or m.top.fieldWidth <= 0 then m.top.fieldWidth = 624
     if m.top.fieldHeight = invalid or m.top.fieldHeight <= 0 then m.top.fieldHeight = 56
+    m.global.observeFieldScoped("theme", "updateTheme")
+    updateTheme()
     onDimensionsChanged()
     onTextChanged()
+    onFocusVisualChanged()
+end sub
+
+'-------------------------------------------------------------------------------
+' updateTheme
+'-------------------------------------------------------------------------------
+sub updateTheme()
+    palette = Theme.TextInput(m.global.theme)
+    m.skinPanels.active = palette.panelUri <> ""
+    m.skinPanels.field.uri = palette.panelUri
+    m.skinPanels.focus.uri = palette.focusUri
+    m.skinPanels.field.visible = m.skinPanels.active
+    m.focusFramePlaceholder.visible = m.skinPanels.active = false
+    m.bg.visible = m.skinPanels.active = false
     onFocusVisualChanged()
 end sub
 
@@ -32,6 +53,10 @@ sub onDimensionsChanged()
         m.bg.width = width
         m.bg.height = height
     end if
+    m.skinPanels.field.width = width
+    m.skinPanels.field.height = height
+    m.skinPanels.focus.width = width + 20
+    m.skinPanels.focus.height = height + 20
 
     if m.focusFrame <> invalid then
         m.focusFrame.width = width + 20
@@ -69,9 +94,10 @@ end sub
 sub onFocusVisualChanged()
     if m.bg = invalid then return
 
+    m.skinPanels.focus.visible = m.top.hasFocusVisual = true and m.skinPanels.active
     if m.top.hasFocusVisual = true then
         'if m.focusFramePlaceholder <> invalid then m.focusFramePlaceholder.visible = false
-        if m.focusFrame <> invalid then m.focusFrame.visible = true
+        if m.focusFrame <> invalid then m.focusFrame.visible = m.skinPanels.active = false
         'm.bg.color = "21405EFF"
         'm.bg.color = Theme.Get().background.tertiary
     else

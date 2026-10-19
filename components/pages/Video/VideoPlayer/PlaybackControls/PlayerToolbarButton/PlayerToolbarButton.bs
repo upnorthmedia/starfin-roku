@@ -2,6 +2,8 @@ import "pkg:/source/Remote.bs"
 import "pkg:/source/TextMeasurement.bs"
 import "pkg:/source/ResolutionAssets.bs"
 import "pkg:/source/ResolutionProfile.bs"
+import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -14,6 +16,8 @@ sub init()
         measurementLabel: CreateObject("roSGNode", "Label")
     }
     m.top.observeField("focusedChild", "onFocusChanged")
+    m.global.observeFieldScoped("theme", "render")
+    ThemeFont.Apply(m.top, m.global.theme)
     render()
 end sub
 
@@ -113,6 +117,15 @@ sub renderAppearance(hasText as boolean, hasFocus as boolean)
     ' Temporary experiment: match the MediaShell unfocused fill on compact options.
     if m.top.compact and not hasFocus then
         m.presentation.background.uri = "pkg:/images/buttons/media-toolbar-button-unfocused.9.png"
+    end if
+    if Theme.IsSkin(m.global.theme) then
+        palette = Theme.ToolbarButton(m.global.theme)
+        m.presentation.background.uri = palette.unfocusedUri
+        m.presentation.label.color = palette.text
+        if hasFocus then
+            m.presentation.background.uri = palette.focusedUri
+            m.presentation.label.color = palette.focusedText
+        end if
     end if
     opacity = 1.0
     if not m.top.enabled then opacity = 0.35

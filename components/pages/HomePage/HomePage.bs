@@ -1,3 +1,5 @@
+import "pkg:/source/TimerControl.bs"
+import "pkg:/source/Theme.bs"
 import "pkg:/source/UnwatchedEpisodeCount.bs"
 import "pkg:/source/RemotePlayback.bs"
 import "pkg:/source/Remote.bs"
@@ -33,6 +35,7 @@ sub init()
         sessionKey: ""
         rows: {}
         episodeImageMode: SettingsStore.GetSettingValue(m.top.settings, SettingsStore.Key.HomeEpisodeImages)
+        showMyMediaRow: SettingsStore.IsMyMediaRowShown(m.top.settings)
         rowOrder: ["libraries", "continueWatching", "continueListening", "nextUp", "liveTvOnNow"]
         latestLibraries: {}
         latestTasks: []
@@ -63,6 +66,9 @@ end sub
 sub initReferences()
     m.log = new Logger("HomePage", m.global.logService)
     m.shelvesGroup = m.top.findNode("shelvesGroup")
+    m.shelfViewport = m.top.findNode("shelfViewport")
+    m.billboard = m.top.findNode("billboard")
+    m.billboardTimer = m.top.findNode("billboardTimer")
     m.shelvesAnimation = m.top.findNode("shelvesAnimation")
     m.shelvesTranslation = m.top.findNode("shelvesTranslation")
     m.episodeCountRefresh = m.top.findNode("episodeCountRefresh")
@@ -75,12 +81,82 @@ sub initHandlers()
     m.top.observeField("settings", "onSettingsChanged")
     m.top.observeField("loadRequest", "onLoadRequestChanged")
     m.episodeCountRefresh.observeField("response", "onEpisodeCountsRefreshed")
+    m.billboardTimer.observeField("fire", "updateBillboard")
+    m.top.observeField("visible", "applyThemeLayout")
+    m.global.observeFieldScoped("theme", "applyThemeLayout")
+    applyThemeLayout()
+end sub
+
+'-------------------------------------------------------------------------------
+' applyThemeLayout
+'-------------------------------------------------------------------------------
+' Skins show a billboard of the focused item above a shorter shelf viewport;
+' the original themes keep the full-height shelves. The billboard is hidden
+' with the page so its featured rotation pauses while another page is shown.
+'-------------------------------------------------------------------------------
+sub applyThemeLayout()
+    showBillboard = Theme.ShowsBillboard(m.global.theme)
+    m.billboard.visible = showBillboard and m.top.visible = true
+    if showBillboard then
+        m.shelfViewport.translation = [0, 460]
+        m.shelfViewport.clippingRect = [0, 0, 1824, 500]
+        scheduleBillboardUpdate()
+    else
+        m.shelfViewport.translation = [0, 20]
+        m.shelfViewport.clippingRect = [0, 0, 1824, 940]
+    end if
+end sub
+
+'-------------------------------------------------------------------------------
+' scheduleBillboardUpdate
+'-------------------------------------------------------------------------------
+' Coalesces rapid focus movement into one artwork request.
+'-------------------------------------------------------------------------------
+sub scheduleBillboardUpdate()
+    if m.billboard.visible <> true then return
+    m.billboardTimer.control = TimerControl.Command.Stop
+    m.billboardTimer.control = TimerControl.Command.Start
+end sub
+
+'-------------------------------------------------------------------------------
+' onHomeShelfFocusedItemChanged
+'-------------------------------------------------------------------------------
+sub onHomeShelfFocusedItemChanged()
+    scheduleBillboardUpdate()
+end sub
+
+'-------------------------------------------------------------------------------
+' updateBillboard
+'-------------------------------------------------------------------------------
+' The resting position (first tile of the first shelf) leaves the billboard to
+' the featured titles, as on first load; moving away shows the focused title.
+'-------------------------------------------------------------------------------
+sub updateBillboard()
+    if m.billboard.visible <> true then return
+    if m.homeState.request <> invalid then m.billboard.server = Strings.ToString(m.homeState.request.server)
+    item = invalid
+    index = m.homeState.focusedShelfIndex
+    if index >= 0 and index < m.homeState.shelfNodes.Count() then
+        shelf = m.homeState.shelfNodes[index]
+        atRestPosition = index = 0 and shelf.callFunc("getFocusedItemIndex") <= 0
+        if atRestPosition = false then item = shelf.callFunc("getFocusedItem")
+    end if
+    if Arrays.IsAssocArray(item) then
+        m.billboard.item = item
+    else
+        m.billboard.item = {}
+    end if
 end sub
 
 '-------------------------------------------------------------------------------
 ' onSettingsChanged
 '-------------------------------------------------------------------------------
 sub onSettingsChanged()
+    showMyMediaRow = SettingsStore.IsMyMediaRowShown(m.top.settings)
+    if showMyMediaRow <> m.homeState.showMyMediaRow then
+        m.homeState.showMyMediaRow = showMyMediaRow
+        if hasRenderedRows() or m.homeState.rows.DoesExist("libraries") then renderRows(m.top.isInFocusChain())
+    end if
     mode = SettingsStore.GetSettingValue(m.top.settings, SettingsStore.Key.HomeEpisodeImages)
     if mode = m.homeState.episodeImageMode then return
     m.homeState.episodeImageMode = mode
@@ -776,7 +852,7 @@ sub renderRows(focusAfterRender = true as boolean)
     shelfIndex = 0
 
     for each key in m.homeState.rowOrder
-        if m.homeState.rows.DoesExist(key) then
+        if m.homeState.rows.DoesExist(key) and isRowShown(key) then
             layout = getRowLayout(key)
             shelf = CreateObject("roSGNode", "HomeShelf")
             shelf.rowIndex = shelfIndex
@@ -787,6 +863,7 @@ sub renderRows(focusAfterRender = true as boolean)
             shelf.observeField("selectedItem", "onHomeShelfSelected")
             shelf.observeField("focusExitUp", "onHomeShelfFocusExitUp")
             shelf.observeField("focusExitDown", "onHomeShelfFocusExitDown")
+            shelf.observeField("focusedItemChanged", "onHomeShelfFocusedItemChanged")
 
             m.shelvesGroup.appendChild(shelf)
             shelfNodes.Push(shelf)
@@ -804,6 +881,7 @@ sub renderRows(focusAfterRender = true as boolean)
     m.homeState.shelfNodes = shelfNodes
     refreshEpisodeCounts()
     m.homeState.shelfPositions = shelfPositions
+    m.billboard.featuredItems = buildFeaturedItems()
     if m.homeState.focusedShelfIndex >= shelfNodes.Count() then
         m.homeState.focusedShelfIndex = shelfNodes.Count() - 1
     end if
@@ -816,6 +894,49 @@ sub renderRows(focusAfterRender = true as boolean)
         if shouldFocus = true and m.homeState.refresh.blocking <> true then focusShelf(m.homeState.focusedShelfIndex)
     end if
 end sub
+
+'-------------------------------------------------------------------------------
+' isRowShown
+'-------------------------------------------------------------------------------
+function isRowShown(key as string) as boolean
+    if key = "libraries" then return m.homeState.showMyMediaRow = true
+    return true
+end function
+
+'-------------------------------------------------------------------------------
+' buildFeaturedItems
+'-------------------------------------------------------------------------------
+' Recently added movies and series, interleaved, for the skin billboard to
+' rotate through while no title below is focused. Four keeps the cached
+' backdrops inside this device class's texture budget.
+'-------------------------------------------------------------------------------
+function buildFeaturedItems() as object
+    movies = []
+    series = []
+    for each libraryId in m.homeState.latestLibraries
+        library = m.homeState.latestLibraries[libraryId]
+        rowKey = "latest:" + Strings.ToString(library.id)
+        if m.homeState.rows.DoesExist(rowKey) then
+            row = m.homeState.rows[rowKey]
+            for i = 0 to row.getChildCount() - 1
+                item = row.getChild(i).raw
+                if isPlayableMovie(item) then
+                    movies.Push(item)
+                else if isTVSeries(item) or isTVEpisode(item) then
+                    series.Push(item)
+                end if
+            end for
+        end if
+    end for
+    featured = []
+    index = 0
+    while featured.Count() < 4 and (index < movies.Count() or index < series.Count())
+        if index < movies.Count() then featured.Push(movies[index])
+        if index < series.Count() and featured.Count() < 4 then featured.Push(series[index])
+        index = index + 1
+    end while
+    return featured
+end function
 
 '-------------------------------------------------------------------------------
 ' markCoreTaskComplete
@@ -949,6 +1070,7 @@ sub focusShelf(index as integer, itemId = "" as string)
 
     shelf = m.homeState.shelfNodes[index]
     if shelf <> invalid then shelf.callFunc("activate", itemId)
+    scheduleBillboardUpdate()
 end sub
 
 '-------------------------------------------------------------------------------

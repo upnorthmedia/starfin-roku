@@ -2,6 +2,7 @@ import "pkg:/source/MediaItem.bs"
 import "pkg:/source/Format.bs"
 import "pkg:/source/String.bs"
 import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 import "pkg:/source/DateTime.bs"
 
 '-------------------------------------------------------------------------------
@@ -10,6 +11,7 @@ import "pkg:/source/DateTime.bs"
 sub init()
     initReferences()
     initStyles()
+    ThemeFont.Apply(m.top, m.global.theme)
 
     ' Observe only after initialization, then render any already assigned fields.
     m.top.observeField("itemContent", "onItemContentChanged")
@@ -130,9 +132,11 @@ sub onItemHasFocusChanged()
     colors = Theme.Get()
     if m.top.itemHasFocus = true then
         m.episodeNumber.font = "font:TinyBoldSystemFont"
+        ThemeFont.Apply(m.episodeNumber, m.global.theme)
         m.episodeNumber.color = colors.text.light.primary
     else
         m.episodeNumber.font = "font:TinySystemFont"
+        ThemeFont.Apply(m.episodeNumber, m.global.theme)
         m.episodeNumber.color = colors.text.light.secondary
     end if
 end sub

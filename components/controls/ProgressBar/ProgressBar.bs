@@ -1,3 +1,5 @@
+import "pkg:/source/Theme.bs"
+
 '-------------------------------------------------------------------------------
 ' init
 '-------------------------------------------------------------------------------
@@ -8,6 +10,8 @@ sub init()
     m.layout = {
         borderPadding: 1
     }
+    m.global.observeFieldScoped("theme", "updateTheme")
+    updateTheme()
 
     ' Register after references and layout state exist, then apply current values.
     m.top.observeField("barWidth", "onLayoutChanged")
@@ -15,6 +19,17 @@ sub init()
     m.top.observeField("progressWidth", "onProgressChanged")
     onLayoutChanged()
     onProgressChanged()
+end sub
+
+'-------------------------------------------------------------------------------
+' updateTheme
+'-------------------------------------------------------------------------------
+sub updateTheme()
+    palette = Theme.ProgressBar(m.global.theme)
+    m.border.visible = palette.borderUri <> ""
+    m.border.uri = palette.borderUri
+    m.background.uri = palette.trackUri
+    m.fill.uri = palette.fillUri
 end sub
 
 '-------------------------------------------------------------------------------

@@ -7,7 +7,12 @@ namespace tests
     @suite("PlaybackControls component")
     class PlaybackControlsTests extends rooibos.BaseTestSuite
 
+        protected override function beforeEach()
+            m.originalTheme = m.global.theme
+        end function
+
         protected override function afterEach()
+            m.global.theme = m.originalTheme
             m.top.callFunc("deactivate")
             getGlobalAa().Delete("finishTimeTestNow")
         end function
@@ -658,6 +663,23 @@ namespace tests
             m.top.callFunc("focusMediaOptions")
 
             m.assertTrue(m.top.findNode("mediaOptionsButton").hasFocus())
+        end function
+
+
+        @describe("themes")
+
+        @it("colors the progress bar red for Cinema and white again for Blue")
+        function _()
+            m.global.theme = "cinema"
+
+            m.assertEqual(m.top.findNode("progressBar").color, &hE50914FF)
+            m.assertEqual(m.top.findNode("progressBarBackground").color, &h4D4D4DFF)
+            m.assertEqual(m.top.findNode("progressBarBackground").opacity, 1.0)
+
+            m.global.theme = "blue"
+
+            m.assertEqual(m.top.findNode("progressBar").color, &hFFFFFFFF)
+            m.assertEqual(m.top.findNode("progressBarBackground").opacity, 0.32)
         end function
 
     end class

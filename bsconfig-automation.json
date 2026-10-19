@@ -5,6 +5,7 @@
         "source/**/*",
         "components/**/*",
         "images/**/*",
+        "fonts/**/*",
         {
             "src": "node_modules/roku-test-automation/device/**/*",
             "dest": "/"

@@ -1,19 +1,22 @@
+import "pkg:/source/Theme.bs"
+
 namespace MaskAssets
 
     '---------------------------------------------------------------------------
     ' MaskAssets.GetProfile
     '---------------------------------------------------------------------------
     function GetProfile(filename as string, fhdSize as object, hdSize as object) as object
+        uri = Theme.MaskUri(m.global.theme, ResolutionAssets.GetMaskImageUri(filename))
         if ResolutionProfile.IsHd() then
             return {
-                uri: ResolutionAssets.GetMaskImageUri(filename)
+                uri: uri
                 size: hdSize
                 isHd: true
             }
         end if
 
         return {
-            uri: ResolutionAssets.GetMaskImageUri(filename)
+            uri: uri
             size: fhdSize
             isHd: false
         }

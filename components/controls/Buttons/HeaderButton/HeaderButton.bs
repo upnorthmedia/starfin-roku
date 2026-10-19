@@ -3,6 +3,8 @@ import "pkg:/source/Number.bs"
 import "pkg:/source/ResolutionAssets.bs"
 import "pkg:/source/ResolutionProfile.bs"
 import "pkg:/source/TextMeasurement.bs"
+import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -12,9 +14,12 @@ sub init()
     m.iconPoster = m.top.findNode("icon")
     m.textLabel = m.top.findNode("textLabel")
     m.measurementLabel = CreateObject("roSGNode", "Label")
-    m.background.uri = ResolutionAssets.GetButtonImageUri("header-button-focused.9.png")
+    m.themePalette = Theme.HeaderButton(m.global.theme)
+    m.background.uri = m.themePalette.focusedUri
     if m.top.headerBgColor = 0 then m.top.headerBgColor = &h12112BFF
     m.top.observeField("focusedChild", "onFocusChanged")
+    m.global.observeFieldScoped("theme", "updateTheme")
+    ThemeFont.Apply(m.top, m.global.theme)
     onDimensionsChanged()
     onTextLayoutChanged()
     onTextChanged()
@@ -144,19 +149,32 @@ sub onFocusVisualChanged()
         m.background.visible = true
         m.background.opacity = 1
     else if hasActiveVisual then
-        m.background.visible = true
-        m.background.opacity = 0.58
+        m.background.visible = m.themePalette.activeOpacity > 0
+        m.background.opacity = m.themePalette.activeOpacity
     else
         m.background.visible = false
         m.background.opacity = 1
     end if
 
-    if hasFocusVisual or hasActiveVisual then
+    if hasFocusVisual or (hasActiveVisual and m.themePalette.activeUsesFocusedText) then
         m.textLabel.color = m.top.headerBgColor
-    else
+    else if hasActiveVisual then
         m.textLabel.color = &hFFFFFFFF
+    else
+        m.textLabel.color = m.themePalette.text
     end if
     m.iconPoster.blendColor = m.textLabel.color
+end sub
+
+'-------------------------------------------------------------------------------
+' updateTheme
+'-------------------------------------------------------------------------------
+sub updateTheme()
+    m.themePalette = Theme.HeaderButton(m.global.theme)
+    m.background.uri = m.themePalette.focusedUri
+    ThemeFont.Apply(m.top, m.global.theme)
+    onTextLayoutChanged()
+    onFocusVisualChanged()
 end sub
 
 '-------------------------------------------------------------------------------

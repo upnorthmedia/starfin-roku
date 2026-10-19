@@ -67,7 +67,7 @@ namespace tests
             m.assertTrue(content.findNode("themePanel").visible)
             m.assertFalse(content.findNode("libraryPanel").visible)
             m.assertEqual(content.findNode("themeOptions").checkedItem, 2)
-            m.assertEqual(content.findNode("themeOptions").content.getChildCount(), 4)
+            m.assertEqual(content.findNode("themeOptions").content.getChildCount(), 6)
             m.assertEqual(content.themePreviewRequested, "")
             m.assertInvalid(content.findNode("tvPanel"))
         end function
@@ -148,7 +148,7 @@ namespace tests
             m.assertEqual(m.top.themePreviewRequested, "")
         end function
 
-        @it("places all four themes in the Theme category with Blue selected by default")
+        @it("places all six themes in the Theme category with Blue selected by default")
         function _()
             'bs:disable-next-line 1140
             showCategory(2)
@@ -158,14 +158,17 @@ namespace tests
             options = m.node.settingsControls.themeOptions
 
             m.assertEqual(options.checkedItem, 0)
-            m.assertEqual(options.content.getChildCount(), 4)
+            m.assertEqual(options.content.getChildCount(), 6)
             m.assertEqual(options.content.getChild(0).title, "Blue gradient")
             m.assertEqual(options.content.getChild(1).title, "Black gradient")
             m.assertEqual(options.content.getChild(2).title, "Grey gradient")
             m.assertEqual(options.content.getChild(3).title, "Pure Black")
-            m.assertEqual(options.numRows, 4)
-            m.assertEqual(m.top.findNode("themeCard").cardHeight, 292.0)
-            m.assertEqual(m.top.findNode("watchedIndicatorCard").translation, [0.0, 308.0])
+            m.assertEqual(options.content.getChild(4).title, "Liquid Glass")
+            m.assertEqual(options.content.getChild(5).title, "Cinema")
+            m.assertEqual(options.numRows, 6)
+            m.assertEqual(m.top.findNode("themeCard").cardHeight, 396.0)
+            m.assertEqual(m.top.findNode("watchedIndicatorCard").translation, [0.0, 412.0])
+            m.assertEqual(m.top.findNode("unwatchedEpisodeCountCard").translation[1], 412.0)
             m.assertEqual(m.node.categoryControls[2], [options, m.node.settingsControls.watchedIndicatorOptions, m.node.settingsControls.showUnwatchedEpisodeCountOptions])
             m.assertEqual(options.getParent(), m.top.findNode("themeCard"))
         end function
@@ -447,10 +450,22 @@ namespace tests
 
         @describe("category and panel setup")
 
+        @it("opens the Advanced panel from the device list on a fresh instance")
+        function _()
+            node = CreateObject("roSGNode", "SettingsContent")
+
+            node.findNode("deviceCategoryList").itemSelected = 2
+
+            panel = node.findNode("advancedPanel")
+            m.assertNotInvalid(panel)
+            m.assertTrue(panel.visible)
+            m.assertEqual(node.categoryTitle, "Advanced")
+        end function
+
         @it("initializes every settings category and matching panel")
         function _()
             deviceTitles = ["General", "Video", "Advanced"]
-            userTitles = ["Libraries", "Media shell", "Theme", "Playback", "Subtitles", "TV", "Screensaver"]
+            userTitles = ["Libraries", "Media shell", "Theme", "Playback", "Subtitles", "TV", "Screensaver", "Home"]
 
             m.assertEqual(m.node.categoryPanels.Count(), deviceTitles.Count() + userTitles.Count())
             m.assertEqual(m.node.categoryControls.Count(), deviceTitles.Count() + userTitles.Count())
@@ -616,7 +631,7 @@ namespace tests
         @it("Down from the last device category wraps to the first user category")
         function _()
             'bs:disable-next-line 1140
-            showCategory(9)
+            showCategory(10)
 
             m.node.deviceCategoryList.jumpToItem = m.node.categoryState.deviceCount - 1
             m.node.deviceCategoryList.setFocus(true)
@@ -739,7 +754,7 @@ namespace tests
         @it("switches between reset confirmation and normal reset controls")
         function _()
             'bs:disable-next-line 1140
-            showCategory(9)
+            showCategory(10)
 
             resetIndex = m.node.categoryState.resetIndex
             m.node.focusState.categoryIndex = resetIndex
@@ -837,7 +852,7 @@ namespace tests
             m.top.callFunc("loadSettingsValues")
 
             m.assertEqual(m.node.settingsControls.nextEpisodePromptButton.text, "Off")
-            m.assertEqual(m.node.userCategoryList.numRows, 7)
+            m.assertEqual(m.node.userCategoryList.numRows, 8)
         end function
 
         @it("requests the picker with the pending value")
@@ -1015,7 +1030,7 @@ namespace tests
             'bs:disable-next-line 1140
             showCategory(2)
             'bs:disable-next-line 1140
-            focusCategoryControl(0, 3)
+            focusCategoryControl(0, 5)
 
             'bs:disable-next-line 1140
             handled = onKeyEvent("down", true)
@@ -1995,7 +2010,7 @@ namespace tests
         @it("publishes the General category title")
         function _()
             'bs:disable-next-line 1140
-            showCategory(7)
+            showCategory(8)
 
             m.assertEqual(m.top.categoryTitle, "General")
         end function
@@ -2003,7 +2018,7 @@ namespace tests
         @it("publishes the Video category title")
         function _()
             'bs:disable-next-line 1140
-            showCategory(8)
+            showCategory(9)
 
             m.assertEqual(m.top.categoryTitle, "Video")
         end function
@@ -2011,7 +2026,7 @@ namespace tests
         @it("publishes the Advanced category title")
         function _()
             'bs:disable-next-line 1140
-            showCategory(9)
+            showCategory(10)
 
             m.assertEqual(m.top.categoryTitle, "Advanced")
         end function
@@ -2109,7 +2124,7 @@ namespace tests
 
             m.assertTrue(watched.cardWidth < count.cardWidth)
             m.assertEqual(watched.cardWidth + count.cardWidth + 16, 1160.0)
-            m.assertEqual(count.translation, [watched.cardWidth + 16, 308.0])
+            m.assertEqual(count.translation, [watched.cardWidth + 16, 412.0])
             m.assertEqual(count.getParent(), m.top.findNode("themePanel"))
             m.assertEqual(options.content.getChildCount(), 3)
             m.assertEqual(options.content.getChild(0).title, "Off")
@@ -2190,7 +2205,7 @@ namespace tests
             'bs:disable-next-line 1140
             showCategory(2)
             'bs:disable-next-line 1140
-            focusCategoryControl(0, 3)
+            focusCategoryControl(0, 5)
 
             'bs:disable-next-line 1140
             onKeyEvent("down", true)
@@ -2410,6 +2425,53 @@ namespace tests
             m.assertFalse(description.isTextEllipsized)
             m.assertTrue(description.boundingRect().height > 0)
             m.assertTrue(description.translation[1] + description.boundingRect().height <= card.cardHeight)
+        end function
+
+
+        @describe("Home category")
+
+        @it("loads the My Media row preference as On by default")
+        function _()
+            'bs:disable-next-line 1140
+            showCategory(7)
+
+            m.top.accountKey = "rooibos-mymedia-default"
+            m.top.callFunc("loadSettingsValues")
+
+            m.assertEqual(m.top.categoryTitle, "Home")
+            m.assertTrue(m.top.findNode("homePanel").visible)
+            m.assertEqual(m.node.settingsControls.showMyMediaRowOptions.checkedItem, 1)
+            m.assertEqual(m.node.categoryControls[7], [m.node.settingsControls.showMyMediaRowOptions])
+            m.assertEqual(m.top.findNode("myMediaRowCard").title, "My Media row")
+            m.assertEqual(m.node.settingsControls.showMyMediaRowOptions.content.getChild(0).title, "Off")
+            m.assertEqual(m.node.settingsControls.showMyMediaRowOptions.content.getChild(1).title, "On")
+        end function
+
+        @it("includes a hidden My Media row in save values")
+        function _()
+            'bs:disable-next-line 1140
+            showCategory(7)
+            m.top.accountKey = "rooibos-mymedia-off"
+            m.top.callFunc("loadSettingsValues")
+
+            m.node.settingsControls.showMyMediaRowOptions.itemSelected = 0
+
+            m.assertEqual(m.node.settingsControls.showMyMediaRowOptions.checkedItem, 0)
+            m.assertEqual(m.top.callFunc("getSettingsValues")[SettingsStore.Key.ShowMyMediaRow], "off")
+        end function
+
+        @it("restores a saved Off preference into the Home category")
+        function _()
+            expected = SettingsStore.Defaults()
+            expected[SettingsStore.Key.ShowMyMediaRow] = "off"
+            content = m.createFreshContent(expected)
+            content.accountKey = "rooibos-mymedia-saved"
+            content.callFunc("loadSettingsValues")
+
+            content.findNode("userCategoryList").itemFocused = 7
+
+            m.assertEqual(content.findNode("showMyMediaRowOptions").checkedItem, 0)
+            m.assertEqual(content.callFunc("getSettingsValues")[SettingsStore.Key.ShowMyMediaRow], "off")
         end function
 
     end class

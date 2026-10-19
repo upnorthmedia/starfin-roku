@@ -372,6 +372,32 @@ namespace tests
             m.assertTrue(m.node.saveButton.hasFocus())
         end function
 
+
+        @it("applies the Cinema panel when constructed")
+        function _()
+            m.global.theme = "cinema"
+
+            dialog = CreateObject("roSGNode", "Dialog")
+
+            m.assertEqual(dialog.findNode("panel").uri, "pkg:/images/themes/cinema/fhd/dialog-panel.9.png")
+        end function
+
+        @it("updates an open dialog to Liquid Glass without losing focus or content")
+        function _()
+            m.top.contentComponentName = "DescriptionDialogContent"
+            content = m.top.callFunc("getContentComponent")
+            m.top.showButtons = true
+            m.top.callFunc("openDialog")
+            m.top.callFunc("focusSaveButton")
+
+            m.global.theme = "liquid-glass"
+
+            m.assertEqual(m.node.panel.uri, "pkg:/images/themes/liquid-glass/fhd/dialog-panel.9.png")
+            m.assertEqual(m.top.callFunc("getContentComponent"), content)
+            m.assertTrue(m.node.dialog.visible)
+            m.assertTrue(m.node.saveButton.hasFocus())
+        end function
+
     end class
 
 end namespace

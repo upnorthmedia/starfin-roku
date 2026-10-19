@@ -1,4 +1,5 @@
 import "pkg:/source/ResolutionProfile.bs"
+import "pkg:/source/Theme.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -7,7 +8,7 @@ sub init()
     m.card = {
         background: m.top.findNode("background"), heading: m.top.findNode("heading"), description: m.top.findNode("descriptionLabel")
     }
-    m.card.background.uri = "pkg:/images/settings/" + ResolutionProfile.GetName() + "/settings-card-glass.9.png"
+    m.card.background.uri = Theme.SettingsCardUri(m.global.theme)
     initHandlers()
     updateCard()
 end sub
@@ -20,6 +21,14 @@ sub initHandlers()
     for each fieldName in ["title", "cardWidth", "cardHeight", "headingY", "description", "descriptionHeight", "descriptionTop"]
         m.top.observeField(fieldName, "updateCard")
     end for
+    m.global.observeFieldScoped("theme", "updateTheme")
+end sub
+
+'-------------------------------------------------------------------------------
+' updateTheme
+'-------------------------------------------------------------------------------
+sub updateTheme()
+    m.card.background.uri = Theme.SettingsCardUri(m.global.theme)
 end sub
 
 '-------------------------------------------------------------------------------

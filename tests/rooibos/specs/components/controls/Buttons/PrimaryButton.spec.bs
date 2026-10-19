@@ -4,6 +4,14 @@ namespace tests
     @suite("PrimaryButton component")
     class PrimaryButtonTests extends rooibos.BaseTestSuite
 
+        protected override function beforeEach()
+            m.originalTheme = m.global.theme
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
+        end function
+
         @describe("PrimaryButton behavior")
 
         @it("initializes XML defaults and required child nodes (case 1)")
@@ -78,7 +86,6 @@ namespace tests
         function _()
             m.top.iconUri = "pkg:/images/icons/play-light.png"
             m.top.focusedIconUri = "pkg:/images/icons/play-dark.png"
-            m.top.hasFocusVisual = false
             'bs:disable-next-line 1140
             onIconUriChanged()
             m.assertTrue(m.node.iconPoster.visible)
@@ -100,7 +107,6 @@ namespace tests
             m.assertEqual(m.node.background.uri, "pkg:/images/buttons/fhd/primary-focused.9.png")
             m.assertEqual(m.node.textLabel.color, &h0F1A2AFF)
 
-            m.top.hasFocusVisual = false
             'bs:disable-next-line 1140
             onFocusVisualChanged()
             m.assertEqual(m.node.background.uri, "pkg:/images/buttons/fhd/primary-unfocused.9.png")
@@ -249,12 +255,51 @@ namespace tests
         function _()
             m.top.focusedBackground = "playback-action-focused.9.png"
             m.top.unfocusedBackground = "playback-action-unfocused.9.png"
-            m.top.hasFocusVisual = false
             m.assertTrue(Instr(1, m.top.findNode("bg").uri, "playback-action-unfocused.9.png") > 0)
 
             m.top.hasFocusVisual = true
 
             m.assertTrue(Instr(1, m.top.findNode("bg").uri, "playback-action-focused.9.png") > 0)
+        end function
+
+
+        @describe("themes")
+
+        @it("uses the Liquid Glass button art for the default backgrounds")
+        function _()
+            m.top.focusedBackground = "primary-focused.9.png"
+            m.top.unfocusedBackground = "primary-unfocused.9.png"
+            m.global.theme = "liquid-glass"
+
+            m.assertEqual(m.node.background.uri, "pkg:/images/themes/liquid-glass/fhd/button.9.png")
+            m.assertEqual(m.node.textLabel.color, &hFFFFFFFF)
+
+            m.top.hasFocusVisual = true
+
+            m.assertEqual(m.node.background.uri, "pkg:/images/themes/liquid-glass/fhd/button-focused.9.png")
+            m.assertEqual(m.node.textLabel.color, &h141A2BFF)
+        end function
+
+        @it("keeps consumer-supplied button art in every theme")
+        function _()
+            button = CreateObject("roSGNode", "PrimaryButton")
+            button.focusedBackground = "playback-action-focused.9.png"
+            button.unfocusedBackground = "playback-action-unfocused.9.png"
+            m.global.theme = "cinema"
+
+            m.assertEqual(button.findNode("bg").uri, "pkg:/images/buttons/fhd/playback-action-unfocused.9.png")
+        end function
+
+
+        @it("applies the theme typeface to its label when the theme changes")
+        function _()
+            m.global.theme = "liquid-glass"
+
+            m.assertEqual(Left(m.node.textLabel.font.uri, 24), "pkg:/fonts/liquid-glass/")
+
+            m.global.theme = "blue"
+
+            m.assertEqual(m.node.textLabel.font.uri, "")
         end function
 
     end class

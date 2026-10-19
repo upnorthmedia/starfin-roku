@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="HomeBillboard" extends="Group">
+  <script type="text/brightscript" uri="pkg:/components/pages/HomePage/HomeBillboard/HomeBillboard.bs" />
+  <interface>
+    <field id="server" type="string" />
+    <field id="item" type="assocarray" />
+    <field id="featuredItems" type="array" />
+  </interface>
+  <children>
+    <Poster id="backdrop" width="1920" height="760" loadWidth="800" loadHeight="450" loadDisplayMode="scaleToZoom" />
+    <Poster id="fade" width="1920" height="760" loadWidth="480" loadHeight="190" loadDisplayMode="scaleToFill" />
+    <Poster id="logo" translation="[96,140]" width="560" height="190" loadDisplayMode="scaleToFit" visible="false" />
+    <Label id="titleLabel" translation="[96,150]" width="900" height="170" wrap="true" maxLines="2" vertAlign="bottom" color="0xFFFFFFFF" font="font:ExtraLargeBoldSystemFont" visible="false" />
+    <Label id="metaLabel" translation="[96,352]" width="900" height="36" color="0xD8E2ECFF" font="font:SmallBoldSystemFont" />
+    <Label id="overviewLabel" translation="[96,398]" width="820" height="124" wrap="true" maxLines="3" color="0xF3F7FBFF" font="font:SmallSystemFont" />
+    <Timer id="rotateTimer" duration="9" repeat="true" />
+  </children>
+</component>

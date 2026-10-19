@@ -5,6 +5,7 @@ import "pkg:/source/Number.bs"
 import "pkg:/source/PlaybackProgress.bs"
 import "pkg:/source/ResolutionAssets.bs"
 import "pkg:/source/ResolutionProfile.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -12,14 +13,24 @@ import "pkg:/source/ResolutionProfile.bs"
 sub init()
     initBase()
     initHandlers()
+    m.global.observeFieldScoped("theme", "onThemeChanged")
+    ThemeFont.Apply(m.top, m.global.theme)
     onItemContentChanged()
+end sub
+
+'-------------------------------------------------------------------------------
+' onThemeChanged
+'-------------------------------------------------------------------------------
+sub onThemeChanged()
+    if m.cardState.layout <> invalid then applyCardLayout(m.cardState.layout)
+    ThemeFont.Apply(m.top, m.global.theme)
 end sub
 
 '-------------------------------------------------------------------------------
 ' initBase
 '-------------------------------------------------------------------------------
 sub initBase()
-    m.cardState = { content: invalid, badgeSize: 42 }
+    m.cardState = { content: invalid, badgeSize: 42, layout: invalid }
     m.cardNodes = {
         contentGroup: m.top.findNode("contentGroup")
         cardMask: m.top.findNode("cardMask")
@@ -125,6 +136,7 @@ end function
 ' applyCardLayout
 '-------------------------------------------------------------------------------
 sub applyCardLayout(layout as object)
+    m.cardState.layout = layout
     m.cardNodes.contentGroup.translation = layout.contentTranslation
     MaskAssets.Apply(m.cardNodes.posterMask, layout.posterMaskName, layout.posterSize, layout.hdPosterSize)
     setNodeSize(m.cardNodes.artworkBackground, layout.posterSize)

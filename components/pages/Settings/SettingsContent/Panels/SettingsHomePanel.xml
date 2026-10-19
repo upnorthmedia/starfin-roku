@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component name="SettingsHomePanel" extends="Group">
+  <children>
+    <SettingsCard id="myMediaRowCard" title="My Media row" cardHeight="236" descriptionTop="178" descriptionHeight="40" description="Off hides the row of library tiles at the top of Home.">
+      <RadioButtonList id="showMyMediaRowOptions" translation="[0,64]" itemSize="[0,52]" numRows="2" checkedItem="1" vertFocusAnimationStyle="floatingFocus" fadeFocusFeedbackWhenAutoScrolling="false" focusFootprintBitmapUri="pkg:/images/focus/transparent_focus_footprint.9.png" />
+    </SettingsCard>
+  </children>
+</component>

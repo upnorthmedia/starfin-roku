@@ -5,6 +5,8 @@ import "pkg:/source/MaskAssets.bs"
 import "pkg:/source/ResolutionProfile.bs"
 import "pkg:/source/ResolutionAssets.bs"
 import "pkg:/source/MediaShellLayout.bs"
+import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -60,9 +62,35 @@ end sub
 ' initHandlers
 '-------------------------------------------------------------------------------
 sub initHandlers()
+    m.global.observeFieldScoped("theme", "applyTheme")
+    applyTheme()
     m.overviewDescription.observeField("overlayRequested", "onDescriptionOverlayRequested")
     m.titleLogo.observeField("loadStatus", "onTitleLogoLoadStatusChanged")
     m.moviePoster.image.observeField("loadStatus", "onMoviePosterLoadStatusChanged")
+end sub
+
+'-------------------------------------------------------------------------------
+' applyTheme
+'-------------------------------------------------------------------------------
+' Skins fade artwork into their canvas with a full-screen gradient; the
+' original themes keep the shared bottom strip at its original geometry.
+'-------------------------------------------------------------------------------
+sub applyTheme()
+    palette = Theme.MediaShell(m.global.theme)
+    m.background.gradient.uri = palette.gradientUri
+    if palette.fullScreenGradient then
+        m.background.gradient.translation = [0, 0]
+        m.background.gradient.height = 1080
+        m.background.gradient.loadWidth = 480
+        m.background.gradient.loadHeight = 270
+    else
+        m.background.gradient.translation = [0, 490]
+        m.background.gradient.height = 740
+        m.background.gradient.loadWidth = 0
+        m.background.gradient.loadHeight = 0
+    end if
+    m.background.full.opacity = palette.backdropOpacity
+    m.background.corner.opacity = palette.backdropOpacity
 end sub
 
 '-------------------------------------------------------------------------------
@@ -152,9 +180,11 @@ sub applyContentLayout(mediaType as string)
     m.episodeTitleLabel.translation = layout.titleTranslation
     m.episodeTitleLabel.height = layout.titleHeight
     m.episodeTitleLabel.font = layout.titleFont
+    ThemeFont.Apply(m.episodeTitleLabel, m.global.theme)
     m.logoFallbackTitleLabel.translation = layout.logoTextTranslation
     m.logoFallbackTitleLabel.height = layout.logoTextHeight
     m.logoFallbackTitleLabel.font = layout.logoTextFont
+    ThemeFont.Apply(m.logoFallbackTitleLabel, m.global.theme)
     m.infoGroup.translation = layout.infoTranslation
     m.metadata.secondaryRow.visible = layout.isSeriesPoster <> true
     m.overviewDescription.visible = layout.isSeriesPoster <> true
@@ -242,8 +272,9 @@ sub renderBackdrop(backdropUrl as string)
 
     if backdropUrl = m.background.url then return
 
-    m.background.full.opacity = 0.50
-    m.background.corner.opacity = 0.50
+    backdropOpacity = Theme.MediaShell(m.global.theme).backdropOpacity
+    m.background.full.opacity = backdropOpacity
+    m.background.corner.opacity = backdropOpacity
     m.background.full.uri = backdropUrl
     m.background.corner.uri = backdropUrl
     m.background.url = backdropUrl
@@ -258,8 +289,9 @@ sub clearBackdrop()
     m.background.cornerGroup.visible = false
     m.background.full.uri = ""
     m.background.corner.uri = ""
-    m.background.full.opacity = 0.50
-    m.background.corner.opacity = 0.50
+    backdropOpacity = Theme.MediaShell(m.global.theme).backdropOpacity
+    m.background.full.opacity = backdropOpacity
+    m.background.corner.opacity = backdropOpacity
     m.background.url = ""
 end sub
 

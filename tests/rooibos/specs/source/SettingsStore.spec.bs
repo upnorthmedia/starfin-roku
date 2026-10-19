@@ -128,6 +128,12 @@ namespace tests
             m.assertEqual(SettingsStore.GetSettingValue({ theme: "unknown" }, SettingsStore.Key.Theme), "blue")
         end function
 
+        @it("keeps the Liquid Glass and Cinema themes")
+        function _()
+            m.assertEqual(SettingsStore.GetSettingValue({ theme: "liquid-glass" }, SettingsStore.Key.Theme), "liquid-glass")
+            m.assertEqual(SettingsStore.GetSettingValue({ theme: "CINEMA" }, SettingsStore.Key.Theme), "cinema")
+        end function
+
         @it("persists themes separately for each account")
         function _()
             m.snapshotMigrationRegistry([])
@@ -304,7 +310,7 @@ namespace tests
         function _()
             defaults = SettingsStore.Defaults()
 
-            m.assertEqual(defaults.Count(), 29)
+            m.assertEqual(defaults.Count(), 30)
             m.assertEqual(defaults[SettingsStore.Key.TvLibraryLayout], "poster;6")
             m.assertEqual(defaults[SettingsStore.Key.MovieLibraryLayout], "poster;6")
             m.assertEqual(defaults[SettingsStore.Key.CollectionCardsLayout], "poster;6")
@@ -316,6 +322,7 @@ namespace tests
             m.assertEqual(defaults[SettingsStore.Key.TvEpisodeListDisplay], "vertical")
             m.assertEqual(defaults[SettingsStore.Key.ShowSeasonSummaryCard], "on")
             m.assertEqual(defaults[SettingsStore.Key.HomeEpisodeImages], "series")
+            m.assertEqual(defaults[SettingsStore.Key.ShowMyMediaRow], "on")
             m.assertEqual(defaults[SettingsStore.Key.MovieShellLayout], "full-screen")
             m.assertEqual(defaults[SettingsStore.Key.TvSeriesShellLayout], "partial-screen")
             m.assertEqual(defaults[SettingsStore.Key.TvEpisodeShellLayout], "full-screen")
@@ -350,6 +357,7 @@ namespace tests
                 SettingsStore.Key.TvEpisodeListDisplay
                 SettingsStore.Key.ShowSeasonSummaryCard
                 SettingsStore.Key.HomeEpisodeImages
+                SettingsStore.Key.ShowMyMediaRow
                 SettingsStore.Key.MovieShellLayout
                 SettingsStore.Key.TvSeriesShellLayout
                 SettingsStore.Key.TvEpisodeShellLayout
@@ -1251,6 +1259,44 @@ namespace tests
         @it("AutoSkipCredits defaults off when its key has never been saved")
         function _()
             m.assertEqual(SettingsStore.GetSettingValue({}, SettingsStore.Key.AutoSkipCredits), "off")
+        end function
+
+
+        @describe("My Media row preference")
+
+        @it("defaults the My Media row to shown")
+        function _()
+            m.assertEqual(SettingsStore.Key.ShowMyMediaRow, "show-my-media-row")
+            m.assertEqual(SettingsStore.GetSettingValue({}, SettingsStore.Key.ShowMyMediaRow), "on")
+            m.assertTrue(SettingsStore.IsMyMediaRowShown(invalid))
+            m.assertTrue(SettingsStore.IsMyMediaRowShown({}))
+        end function
+
+        @it("hides the My Media row only for off")
+        function _()
+            settings = {}
+            settings[SettingsStore.Key.ShowMyMediaRow] = "OFF"
+
+            m.assertFalse(SettingsStore.IsMyMediaRowShown(settings))
+            settings[SettingsStore.Key.ShowMyMediaRow] = "on"
+            m.assertTrue(SettingsStore.IsMyMediaRowShown(settings))
+        end function
+
+        @it("persists the My Media row preference per account")
+        function _()
+            m.snapshotMigrationRegistry([])
+            for each name in ["STARFIN_ROKU", RegistryStore.AccountSectionName("rooibos-mymedia-a"), RegistryStore.AccountSectionName("rooibos-mymedia-b")]
+                section = CreateObject("roRegistrySection", name)
+                m.registrySnapshot[name] = section.ReadMulti(section.GetKeyList())
+            end for
+            settings = SettingsStore.Defaults()
+            settings[SettingsStore.Key.ShowMyMediaRow] = "off"
+            SettingsStore.Save("rooibos-mymedia-a", settings)
+            settings[SettingsStore.Key.ShowMyMediaRow] = "on"
+            SettingsStore.Save("rooibos-mymedia-b", settings)
+
+            m.assertEqual(SettingsStore.Load("rooibos-mymedia-a")[SettingsStore.Key.ShowMyMediaRow], "off")
+            m.assertEqual(SettingsStore.Load("rooibos-mymedia-b")[SettingsStore.Key.ShowMyMediaRow], "on")
         end function
 
     end class

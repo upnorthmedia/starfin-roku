@@ -29,12 +29,26 @@ sub init()
 
     initIcons()
     initHandlers()
+    m.global.observeFieldScoped("theme", "applyTheme")
+    applyTheme()
     onTitleChanged()
     onSubtitleChanged()
     onPlayingChanged()
     onOptionsChanged()
     onSkipButtonAvailabilityChanged()
     updateButtonFocus()
+end sub
+
+'-------------------------------------------------------------------------------
+' applyTheme
+'-------------------------------------------------------------------------------
+sub applyTheme()
+    palette = Theme.PlaybackControls(m.global.theme)
+    m.progressBarBackground.color = palette.trackColor
+    m.progressBarBackground.opacity = palette.trackOpacity
+    m.progressBar.color = palette.fillColor
+    m.progressBar.opacity = palette.fillOpacity
+    m.scrubber.color = palette.scrubberColor
 end sub
 
 '-------------------------------------------------------------------------------

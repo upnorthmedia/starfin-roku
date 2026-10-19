@@ -3,6 +3,8 @@ import "pkg:/source/Number.bs"
 import "pkg:/source/ResolutionAssets.bs"
 import "pkg:/source/ResolutionProfile.bs"
 import "pkg:/source/TextMeasurement.bs"
+import "pkg:/source/Theme.bs"
+import "pkg:/source/ThemeFont.bs"
 
 '-------------------------------------------------------------------------------
 ' init
@@ -12,6 +14,7 @@ sub init()
     m.iconPoster = m.top.findNode("icon")
     m.textLabel = m.top.findNode("textLabel")
     m.measurementLabel = CreateObject("roSGNode", "Label")
+    m.global.observeFieldScoped("theme", "onThemeChanged")
     onDimensionsChanged()
     onTextFontChanged()
     onTextChanged()
@@ -56,14 +59,28 @@ end sub
 ' onFocusVisualChanged
 '-------------------------------------------------------------------------------
 sub onFocusVisualChanged()
+    palette = Theme.Button(m.global.theme)
+    ' Consumers that supply their own button art keep it in every theme.
+    usesThemeArt = m.top.focusedBackground = "primary-focused.9.png" and m.top.unfocusedBackground = "primary-unfocused.9.png"
     if m.top.hasFocusVisual = true then
         m.background.uri = ResolutionAssets.GetButtonImageUri(m.top.focusedBackground)
-        m.textLabel.color = &h0F1A2AFF
+        if usesThemeArt then m.background.uri = palette.focusedUri
+        m.textLabel.color = palette.focusedText
     else
         m.background.uri = ResolutionAssets.GetButtonImageUri(m.top.unfocusedBackground)
-        m.textLabel.color = &hFFFFFFFF
+        if usesThemeArt then m.background.uri = palette.unfocusedUri
+        m.textLabel.color = palette.text
     end if
     onIconUriChanged()
+end sub
+
+'-------------------------------------------------------------------------------
+' onThemeChanged
+'-------------------------------------------------------------------------------
+sub onThemeChanged()
+    ThemeFont.Apply(m.textLabel, m.global.theme)
+    updateContentLayout()
+    onFocusVisualChanged()
 end sub
 
 '-------------------------------------------------------------------------------
@@ -73,6 +90,7 @@ sub onTextFontChanged()
     textFont = m.top.textFont
     if textFont = invalid or textFont = "" then textFont = "font:MediumSystemFont"
     m.textLabel.font = textFont
+    ThemeFont.Apply(m.textLabel, m.global.theme)
     updateContentLayout()
 end sub
 

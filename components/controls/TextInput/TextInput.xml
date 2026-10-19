@@ -16,8 +16,12 @@
     <!-- layer 2: frame that displays on focus -->
     <Rectangle id="focusFrame" translation="[-10,-10]" width="644" height="76" color="0xFFFFFFFF" visible="false" />
 
+    <!-- skin layers: Liquid Glass and Cinema draw the field and its focus frame as nine-patch panels -->
+    <Poster id="focusPanel" translation="[-10,-10]" width="644" height="76" loadDisplayMode="scaleToFill" visible="false" />
+
     <!-- layer 3: inner background that sits inside the frame -->
     <Rectangle id="bg" width="624" height="56" />
+    <Poster id="bgPanel" width="624" height="56" loadDisplayMode="scaleToFill" visible="false" />
 
     <!-- text input value -->
     <LabelPrimary id="textLabel" translation="[18,12]" width="580" />

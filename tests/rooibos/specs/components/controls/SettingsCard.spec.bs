@@ -4,6 +4,14 @@ namespace tests
     @suite("SettingsCard component")
     class SettingsCardTests extends rooibos.BaseTestSuite
 
+        protected override function beforeEach()
+            m.originalTheme = m.global.theme
+        end function
+
+        protected override function afterEach()
+            m.global.theme = m.originalTheme
+        end function
+
         @describe("presentation")
 
         @it("renders default geometry and an empty description on construction")
@@ -105,6 +113,19 @@ namespace tests
             m.assertTrue(measuredWidth > originalWidth)
             m.assertEqual(heading.width, originalWidth)
             m.assertEqual(m.top.cardWidth, 100.0)
+        end function
+
+
+        @it("uses the Cinema card panel and restores the shared glass for Blue")
+        function _()
+            m.global.theme = "cinema"
+            card = CreateObject("roSGNode", "SettingsCard")
+
+            m.assertEqual(card.findNode("background").uri, "pkg:/images/themes/cinema/fhd/card.9.png")
+
+            m.global.theme = "blue"
+
+            m.assertEqual(card.findNode("background").uri, "pkg:/images/settings/fhd/settings-card-glass.9.png")
         end function
 
     end class

@@ -1,7 +1,9 @@
+import "pkg:/source/ThemeFont.bs"
 '-------------------------------------------------------------------------------
 ' init
 '-------------------------------------------------------------------------------
 sub init()
+    ThemeFont.Apply(m.top, m.global.theme)
     m.name = m.top.findNode("name")
     m.address = m.top.findNode("address")
     m.separator = m.top.findNode("separator")

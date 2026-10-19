@@ -5,6 +5,7 @@ namespace tests
     class HomePageTests extends rooibos.BaseTestSuite
 
         protected override function beforeEach()
+            m.originalTheme = m.global.theme
             m.node.homeState.request = { server: "http://server", token: "token", userId: "user" }
             m.node.homeState.rows = {}
             m.top.settings = { "home-episode-images": "episode-with-logo" }
@@ -31,6 +32,7 @@ namespace tests
         end function
 
         protected override function afterEach()
+            m.global.theme = m.originalTheme
             'bs:disable-next-line 1140
             cleanupHomeTasks()
             Spinner.HideBlocking()
@@ -1463,6 +1465,144 @@ namespace tests
 
             m.assertEqual(child.raw.UserData.UnplayedItemCount, 2)
             m.assertTrue(m.node.homeState.shelfNodes[0].isSameNode(shelf))
+        end function
+
+
+        @describe("billboard layout")
+
+        @it("shows the billboard above a shorter shelf viewport for skins and hides it for Blue")
+        function _()
+            m.global.theme = "liquid-glass"
+
+            m.assertTrue(m.top.findNode("billboard").visible)
+            m.assertEqual(m.top.findNode("shelfViewport").translation, [0.0, 460.0])
+            m.assertEqual(m.top.findNode("shelfViewport").clippingRect.height, 500.0)
+
+            m.global.theme = "blue"
+
+            m.assertFalse(m.top.findNode("billboard").visible)
+            m.assertEqual(m.top.findNode("shelfViewport").translation, [0.0, 20.0])
+            m.assertEqual(m.top.findNode("shelfViewport").clippingRect.height, 940.0)
+        end function
+
+
+        @describe("My Media row preference")
+
+        @it("renders the My Media shelf by default")
+        function _()
+            m.node.homeState.rowOrder = ["libraries", "continueWatching"]
+            'bs:disable-next-line 1140
+            addRow("libraries", "My Media", [{ Id: "library", Type: "CollectionFolder", CollectionType: "movies" }])
+            'bs:disable-next-line 1140
+            addRow("continueWatching", "Continue Watching", [{ Id: "home-1", Type: "Video" }])
+            'bs:disable-next-line 1140
+            renderRows(false)
+
+            m.assertEqual(m.node.homeState.shelfNodes.Count(), 2)
+            m.assertEqual(m.node.homeState.shelfNodes[0].rowContent.rowKey, "libraries")
+        end function
+
+        @it("hides the My Media shelf when the preference is off and restores it when on")
+        function _()
+            m.node.homeState.rowOrder = ["libraries", "continueWatching"]
+            'bs:disable-next-line 1140
+            addRow("libraries", "My Media", [{ Id: "library", Type: "CollectionFolder", CollectionType: "movies" }])
+            'bs:disable-next-line 1140
+            addRow("continueWatching", "Continue Watching", [{ Id: "home-1", Type: "Video" }])
+            'bs:disable-next-line 1140
+            renderRows(false)
+
+            m.top.settings = { "home-episode-images": "episode-with-logo", "show-my-media-row": "off" }
+
+            m.assertFalse(m.node.homeState.showMyMediaRow)
+            m.assertEqual(m.node.homeState.shelfNodes.Count(), 1)
+            m.assertEqual(m.node.homeState.shelfNodes[0].rowContent.rowKey, "continueWatching")
+
+            m.top.settings = { "home-episode-images": "episode-with-logo", "show-my-media-row": "on" }
+
+            m.assertTrue(m.node.homeState.showMyMediaRow)
+            m.assertEqual(m.node.homeState.shelfNodes.Count(), 2)
+            m.assertEqual(m.node.homeState.shelfNodes[0].rowContent.rowKey, "libraries")
+        end function
+
+        @describe("featured billboard items")
+
+        @it("interleaves recently added movies and series for the billboard")
+        function _()
+            m.node.homeState.rowOrder = ["latest:movies", "latest:shows"]
+            m.node.homeState.latestLibraries = { movies: { id: "movies", name: "Movies", collectionType: "movies" }, shows: { id: "shows", name: "Shows", collectionType: "tvshows" } }
+            'bs:disable-next-line 1140
+            addRow("latest:movies", "Recently Added in Movies", [{ Id: "m-1", Type: "Movie", Name: "Movie One" }, { Id: "m-2", Type: "Movie", Name: "Movie Two" }])
+            'bs:disable-next-line 1140
+            addRow("latest:shows", "Recently Added in Shows", [{ Id: "s-1", Type: "Series", Name: "Series One" }])
+
+            'bs:disable-next-line 1140
+            renderRows(false)
+
+            featured = m.top.findNode("billboard").featuredItems
+            m.assertEqual(featured.Count(), 3)
+            m.assertEqual(featured[0].Id, "m-1")
+            m.assertEqual(featured[1].Id, "s-1")
+            m.assertEqual(featured[2].Id, "m-2")
+        end function
+
+        @it("caps the featured billboard at four titles")
+        function _()
+            m.node.homeState.rowOrder = ["latest:movies"]
+            m.node.homeState.latestLibraries = { movies: { id: "movies", name: "Movies", collectionType: "movies" } }
+            items = []
+            for i = 1 to 8
+                items.Push({ Id: "m-" + i.ToStr(), Type: "Movie", Name: "Movie " + i.ToStr() })
+            end for
+            'bs:disable-next-line 1140
+            addRow("latest:movies", "Recently Added in Movies", items)
+
+            'bs:disable-next-line 1140
+            renderRows(false)
+
+            m.assertEqual(m.top.findNode("billboard").featuredItems.Count(), 4)
+        end function
+
+
+        @it("leaves the billboard to featured titles at the resting position and follows focus elsewhere")
+        function _()
+            m.global.theme = "liquid-glass"
+            m.node.homeState.rowOrder = ["continueWatching"]
+            first = { Id: "cw-1", Type: "Movie", Name: "First" }
+            second = { Id: "cw-2", Type: "Movie", Name: "Second" }
+            'bs:disable-next-line 1140
+            addRow("continueWatching", "Continue Watching", [first, second])
+            'bs:disable-next-line 1140
+            renderRows(false)
+            shelf = m.node.homeState.shelfNodes[0]
+            billboard = m.top.findNode("billboard")
+
+            shelf.callFunc("activate", "cw-1")
+            'bs:disable-next-line 1140
+            updateBillboard()
+
+            m.assertEqual(billboard.item, {})
+
+            shelf.callFunc("activate", "cw-2")
+            'bs:disable-next-line 1140
+            updateBillboard()
+
+            m.assertEqual(billboard.item.Id, "cw-2")
+        end function
+
+
+        @it("hides the billboard with the page and shows it again")
+        function _()
+            m.global.theme = "liquid-glass"
+            billboard = m.top.findNode("billboard")
+
+            m.top.visible = false
+
+            m.assertFalse(billboard.visible)
+
+            m.top.visible = true
+
+            m.assertTrue(billboard.visible)
         end function
 
     end class
