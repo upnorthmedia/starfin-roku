@@ -184,7 +184,7 @@ the real TMDB API-key keyboard flow using a
 synthetic value. Opening Roku's keyboard can display an OS-owned mobile-keyboard
 QR banner that outlives the dialog, so keyboard tests exit and relaunch Starfin in
 a `finally` block before later screenshots are captured. Advanced verifies that
-Reset Starfin can be opened and aborted without changing stored settings or
+Reset Poppins can be opened and aborted without changing stored settings or
 authentication; automation does not confirm the destructive erase action.
 
 After any settings spec runs, suite teardown restores all eighteen settings to

@@ -36,7 +36,7 @@
       width="650"
       numLines="5"
       wrap="true"
-      text="Welcome to Starfin, a modern Roku client for Jellyfin. Enjoy a refined, intuitive way to browse, discover, and watch your media library." />
+      text="Welcome to Poppins, a modern Roku client for Jellyfin. Enjoy a refined, intuitive way to browse, discover, and watch your media library." />
 
     <!-- status -->
     <Label 

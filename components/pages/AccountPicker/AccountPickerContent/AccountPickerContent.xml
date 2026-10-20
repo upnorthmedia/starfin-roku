@@ -47,7 +47,7 @@
       wrap="true"
       numLines="4"
       vertAlign="center"
-      text="Removes this user and their settings from Starfin. Their Jellyfin account is unaffected." />
+      text="Removes this user and their settings from Poppins. Their Jellyfin account is unaffected." />
     <PrimaryButton
       id="removeButton"
       visible="false"
